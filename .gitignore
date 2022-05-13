@@ -1,0 +1,14 @@
+/target
+**/*.rs.bk
+bin/
+pkg/
+dist/
+wasm-pack.log
+node_modules
+.idea
+test.json
+make_admin.json
+**/target
+tailwind-ui/Cargo.lock
+state.*
+.direnv
