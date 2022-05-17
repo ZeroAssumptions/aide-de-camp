@@ -12,3 +12,5 @@ make_admin.json
 tailwind-ui/Cargo.lock
 state.*
 .direnv
+aide-de-camp-sqlite/sqlite.db
+
