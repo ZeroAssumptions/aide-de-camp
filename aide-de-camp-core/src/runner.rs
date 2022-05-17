@@ -25,7 +25,7 @@ impl RunnerRouter {
     }
 
     pub fn types(&self) -> Vec<&'static str> {
-        self.jobs.keys().map(|t| *t).collect()
+        self.jobs.keys().copied().collect()
     }
 
     pub async fn process<H: JobHandle>(&self, job_handle: H) -> Result<(), RunnerError> {

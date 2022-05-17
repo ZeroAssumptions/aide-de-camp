@@ -110,7 +110,7 @@ async fn main() {
         let interval = std::time::Duration::from_nanos(interval_nanos);
         tokio::spawn(async move {
             schedule_tasks(count, interval, Arc::new(queue)).await;
-        });
+        })
     };
 
     let processed = Arc::new(AtomicUsize::new(0));
@@ -135,10 +135,7 @@ async fn main() {
         })
     };
 
-    let mut results = rx
-        .take(count.try_into().unwrap())
-        .collect::<Vec<JobResult>>()
-        .await;
+    let mut results = rx.take(count).collect::<Vec<JobResult>>().await;
 
     let seen_ids = { results.iter().map(|r| r.jid).collect::<HashSet<Xid>>() };
 

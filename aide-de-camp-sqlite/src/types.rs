@@ -21,12 +21,10 @@ impl<'r> FromRow<'r, SqliteRow> for JobRow {
             .map(Xid::from_str)?
             .map_err(|xid_err| Error::Decode(Box::new(xid_err)))?;
         let job_type = row.try_get("job_type")?;
-        let payload = row
-            .try_get("payload")
-            .map(|bytes: Vec<u8>| Bytes::from(bytes))?;
+        let payload = row.try_get::<Vec<u8>, _>("payload").map(Bytes::from)?;
         // Retry count is incremented every time job is checked out from the queue.
         // We decrement it by one  to "real" retry count.
-        let retries: u32 = row.try_get("retries").map(|r: u32| r + 1)?;
+        let retries: u32 = row.try_get("retries").map(|r: u32| r - 1)?;
         let scheduled_at = row.try_get("scheduled_at")?;
         let enqueued_at = row.try_get("enqueued_at")?;
         Ok(Self {
