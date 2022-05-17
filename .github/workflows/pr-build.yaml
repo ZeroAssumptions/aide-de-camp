@@ -2,8 +2,6 @@
 name: Pull Request Checks
 on:
   pull_request:
-permissions:
-  actions: write
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -39,9 +37,12 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Rustfmt
-        run: cargo fmt -- --check
-      - run: rustup component add clippy
+          profile: minimal
+          override: true
+          components: rustfmt, clippy
+      - uses: LoliGothick/rustfmt-check@v0.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,6 +66,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          profile: minimal
+          override: true
       - name: Install cargo-nextest
         uses: baptiste0928/cargo-install@v1
         with:
