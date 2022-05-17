@@ -4,9 +4,6 @@ on:
   pull_request:
 permissions:
   actions: write
-  checks: write
-  pull-requests:: write
-  statuses:: write
 jobs:
   changes:
     runs-on: ubuntu-latest
