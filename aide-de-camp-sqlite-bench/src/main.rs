@@ -135,10 +135,7 @@ async fn main() {
         })
     };
 
-    let mut results = rx
-        .take(count)
-        .collect::<Vec<JobResult>>()
-        .await;
+    let mut results = rx.take(count).collect::<Vec<JobResult>>().await;
 
     let seen_ids = { results.iter().map(|r| r.jid).collect::<HashSet<Xid>>() };
 
