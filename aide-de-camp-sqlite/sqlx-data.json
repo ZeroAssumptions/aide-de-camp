@@ -1,0 +1,71 @@
+{
+  "db": "SQLite",
+  "0206dcb0b25c0beaddb8b169da7f60a5301275d19d82fe7e1ff2f91f90b9b567": {
+    "describe": {
+      "columns": [
+        {
+          "name": "jid",
+          "ordinal": 0,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        true
+      ],
+      "parameters": {
+        "Right": 0
+      }
+    },
+    "query": "SELECT jid FROM adc_queue"
+  },
+  "2da89a793016c67949a2a228ffebd70a6dd315b20a35787598ac2c10ba78181e": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at) VALUES (?1,?2,?3,?4)"
+  },
+  "45bd3fdf8cae3adecfb6b2851010f7f9b6e67bb6005598b480b7a1ed59b212db": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM adc_queue WHERE jid = ?1"
+  },
+  "52a42447be39002c9ea32ac14a8dff9a9a459c9b16c7c76f6d380c5492b07843": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM adc_queue where jid = ?1"
+  },
+  "90ff02e75816b440adb7fcf15d39a89892f021c6ab1d5c54fc582514ee00e3ee": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "UPDATE adc_queue SET started_at=null WHERE jid = ?1"
+  },
+  "c09da3935519d156e9518369ea6b38fe15e9a00fc97428379383ffb746fb164b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 6
+      }
+    },
+    "query": "INSERT INTO adc_dead_queue (jid, job_type, payload, retries, scheduled_at, enqueued_at) VALUES (?1, ?2, ?3, ?4,?5,?6)"
+  }
+}

@@ -27,6 +27,8 @@ jobs:
               - 'aide-de-camp-sqlite/**'
   code-style:
     runs-on: ubuntu-latest
+    env:
+      SQLX_OFFLINE: true
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -56,6 +58,8 @@ jobs:
         project: ${{ fromJSON(needs.changes.outputs.packages) }}
       fail-fast: false
     runs-on: ubuntu-latest
+    env:
+      SQLX_OFFLINE: true
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.9.1
@@ -70,15 +74,8 @@ jobs:
           override: true
       - uses: taiki-e/install-action@nextest
       - name: Test Rust
-        if: matrix.project != 'coordinator'
         working-directory: ${{matrix.project}}
         run: cargo nextest run --profile ci
-      - name: Test Rust (Sudo)
-        if: matrix.project == 'coordinator'
-        working-directory: ${{matrix.project}}
-        run: |
-          sudo env PATH=${PATH} cargo nextest run --profile ci
-          sudo chmod -R 777 ../target/nextest
       - name: Upload Unit Test Results
         if: always()
         uses: actions/upload-artifact@v2
