@@ -116,6 +116,6 @@ mod test {
 
         let payload = bincode::encode_to_vec(&payload, standard()).unwrap();
 
-        wrapped.handle(xid::new(), payload).await.unwrap();
+        wrapped.handle(xid::new(), payload.into()).await.unwrap();
     }
 }
