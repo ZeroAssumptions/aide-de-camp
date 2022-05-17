@@ -116,14 +116,14 @@ mod test {
 
         // Now poll_next should return this job to us
         let job1 = queue.poll_next(&[TestJob1::name()]).await.unwrap().unwrap();
-        assert_eq!(job1.retries(), 1);
+        assert_eq!(job1.retries(), 0);
         // Fail the job
         job1.fail().await.unwrap();
 
         // We should be able to get the same job again, but it should have increased retry count
 
         let job1 = queue.poll_next(&[TestJob1::name()]).await.unwrap().unwrap();
-        assert_eq!(job1.retries(), 2);
+        assert_eq!(job1.retries(), 1);
     }
 
     #[tokio::test]

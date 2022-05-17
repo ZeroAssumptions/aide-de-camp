@@ -73,7 +73,7 @@ impl Queue for SqliteQueue {
         );
         let query = {
             builder.push(
-                "WHERE jid IN (SELECT jid FROM adc_queue WHERE started_at IS NULL AND queue='default' AND scheduled_at <=" 
+                "WHERE jid IN (SELECT jid FROM adc_queue WHERE started_at IS NULL AND queue='default' AND scheduled_at <="
             );
             builder.push_bind(now);
             builder.push(" AND job_type IN (");
