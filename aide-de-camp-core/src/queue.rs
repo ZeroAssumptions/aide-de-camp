@@ -21,7 +21,7 @@ pub trait Queue: Send + Sync {
         J::Payload: Decode + Encode,
         J::Error: Into<JobError>;
 
-    /// Schedule a job to run next. Depending on queue backlog this may start running later than you expect.
+    /// Schedule a job to run next. Depending on the queue backlog this may start running later than you expect.
     async fn schedule<J>(&self, payload: J::Payload) -> Result<Xid, QueueError>
     where
         J: JobHandler + 'static,
@@ -58,7 +58,7 @@ pub trait Queue: Send + Sync {
         self.poll_next_with_instant(job_types, Utc::now()).await
     }
 
-    /// Await next job. Default implementation polls the queue with defined interval until there is something.
+    /// Await the next job. Default implementation polls the queue with defined interval until there is something.
     async fn next(
         &self,
         job_types: &[&str],
@@ -78,11 +78,12 @@ pub trait Queue: Send + Sync {
     }
 }
 
+/// This trait is responsible for the entire job lifecycle.
 #[async_trait]
 pub trait JobHandle: Send + Sync {
-    // Get job id
+    // Get job id.
     fn id(&self) -> Xid;
-    // Get Job type
+    // Get Job type.
     fn job_type(&self) -> &str;
     // Get job payload.
     fn payload(&self) -> Bytes;
@@ -90,7 +91,7 @@ pub trait JobHandle: Send + Sync {
     fn retries(&self) -> u32;
     // Mark the job as completed successfully.
     async fn complete(mut self) -> Result<(), QueueError>;
-    // Mark the job as failed
+    // Mark the job as failed.
     async fn fail(mut self) -> Result<(), QueueError>;
     // Move the job to dead queue.
     async fn dead_queue(mut self) -> Result<(), QueueError>;

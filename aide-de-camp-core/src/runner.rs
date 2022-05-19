@@ -5,7 +5,7 @@ use bincode::{Decode, Encode};
 use chrono::Duration;
 use std::collections::HashMap;
 
-/// A job runner also known as worker.
+/// Job router. Handles the mapping of job type to job handler.
 #[derive(Default)]
 pub struct RunnerRouter {
     jobs: HashMap<&'static str, BoxedJobHandler>,
@@ -24,10 +24,13 @@ impl RunnerRouter {
         self.jobs.entry(name).or_insert(boxed);
     }
 
+    /// Return all job types that router can handle.
     pub fn types(&self) -> Vec<&'static str> {
         self.jobs.keys().copied().collect()
     }
 
+    /// Process the job. This type takes a job handle given by the queue.
+    #[tracing::instrument(skip_all, fields(jid = %job_handle.id().to_string()))]
     pub async fn process<H: JobHandle>(&self, job_handle: H) -> Result<(), RunnerError> {
         if let Some(r) = self.jobs.get(job_handle.job_type()) {
             match r
@@ -58,6 +61,7 @@ impl RunnerRouter {
         }
     }
 
+    /// Wait for queue to return a job and process it, then repeat. If QueueError seen —  worker is suspended for 5 minutes.
     pub async fn listen<Q, QR>(&self, queue: Q, poll_interval: Duration)
     where
         Q: AsRef<QR>,
@@ -81,6 +85,7 @@ impl RunnerRouter {
     }
 }
 
+#[tracing::instrument]
 async fn handle_queue_error(error: QueueError) {
     tracing::error!("Encountered QueueError: {}", error);
     tracing::warn!("Suspending worker for 5 seconds");

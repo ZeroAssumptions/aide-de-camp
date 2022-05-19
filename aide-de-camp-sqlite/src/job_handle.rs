@@ -30,6 +30,7 @@ impl JobHandle for SqliteJobHandle {
         self.row.retries
     }
 
+    #[tracing::instrument(skip_all, fields(jid = %self.id().to_string()))]
     async fn complete(mut self) -> Result<(), QueueError> {
         let jid = self.row.jid.to_string();
         sqlx::query!("DELETE FROM adc_queue where jid = ?1", jid)
@@ -39,6 +40,7 @@ impl JobHandle for SqliteJobHandle {
         Ok(())
     }
 
+    #[tracing::instrument(skip_all, fields(jid = %self.id().to_string()))]
     async fn fail(mut self) -> Result<(), QueueError> {
         let jid = self.row.jid.to_string();
         sqlx::query!("UPDATE adc_queue SET started_at=null WHERE jid = ?1", jid)
@@ -48,6 +50,7 @@ impl JobHandle for SqliteJobHandle {
         Ok(())
     }
 
+    #[tracing::instrument(skip_all, fields(jid = %self.id().to_string()))]
     async fn dead_queue(mut self) -> Result<(), QueueError> {
         let jid = self.row.jid.to_string();
         let retries = self.row.retries;

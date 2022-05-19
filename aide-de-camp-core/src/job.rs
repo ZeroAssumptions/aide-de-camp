@@ -22,13 +22,13 @@ pub trait JobHandler: Send + Sync {
     fn max_retries(&self) -> u32 {
         0
     }
-    /// Job type, used to differentiate between different jobs in the queue.
+    /// Job type, used to differentiate between different jobs in the queue. Default is 0.
     fn name() -> &'static str
     where
         Self: Sized;
 }
 
-/// Object-safe implementation of a job that can be used in runner.
+/// Object-safe implementation of a job that can be used in a router. Router handles wrapping, so this type shouldn't be used directly.
 pub struct WrappedJobHandler<T: JobHandler> {
     job: T,
     config: Configuration,
@@ -40,11 +40,13 @@ where
     J::Payload: Decode + Encode,
     J::Error: Into<JobError>,
 {
+    /// Wrap a job that has bincode friendly payload and error type that can be converted to JobError.
     pub fn new(job: J) -> Self {
         let config = bincode::config::standard();
         Self { job, config }
     }
 
+    /// Turn this into Box<dyn JobHandler<Payload = Bytes, Error = JobError>>
     pub fn boxed(self) -> BoxedJobHandler {
         Box::new(self) as BoxedJobHandler
     }
@@ -60,6 +62,7 @@ where
     type Payload = Bytes;
     type Error = JobError;
 
+    #[tracing::instrument(skip_all, fields(jid = %jid.to_string()))]
     async fn handle(&self, jid: Xid, payload: Self::Payload) -> Result<(), Self::Error> {
         let (payload, _) = bincode::decode_from_slice(payload.as_ref(), self.config)?;
         self.job.handle(jid, payload).await.map_err(Into::into)

@@ -2,6 +2,8 @@ use chrono::Duration;
 use std::convert::Infallible;
 use thiserror::Error;
 
+
+/// An error returned by WrappedJobHandler.
 #[derive(Error, Debug)]
 pub enum JobError {
     /// Encountered an error when tried to deserialize Context.
@@ -22,6 +24,8 @@ impl From<Infallible> for JobError {
     }
 }
 
+
+/// And error returned by queue implementation.
 #[derive(Error, Debug)]
 pub enum QueueError {
     /// Encountered an error when tried to serialize Context.
@@ -37,6 +41,8 @@ pub enum QueueError {
     Other(#[from] anyhow::Error),
 }
 
+
+/// And error returned by RunnerRouter.
 #[derive(Error, Debug)]
 pub enum RunnerError {
     #[error("Runner is not configured to run this job type: {0}")]
