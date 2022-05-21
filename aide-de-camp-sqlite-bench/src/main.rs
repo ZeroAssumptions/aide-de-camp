@@ -1,14 +1,13 @@
-use aide_de_camp::aide_de_camp_sqlite::queue::SqliteQueue;
-use aide_de_camp::aide_de_camp_sqlite::SCHEMA_SQL;
-use aide_de_camp::core::anyhow::anyhow;
-use aide_de_camp::core::async_trait::async_trait;
-use aide_de_camp::core::chrono::{Duration, Utc};
-use aide_de_camp::core::error::JobError;
-use aide_de_camp::core::job::JobHandler;
+use aide_de_camp::core::job_processor::{JobError, JobHandler};
 use aide_de_camp::core::queue::Queue;
-use aide_de_camp::core::runner::RunnerRouter;
 use aide_de_camp::core::Xid;
-use aide_de_camp::job_runner::JobRunner;
+use aide_de_camp::core::{Duration, Utc};
+use aide_de_camp::runner::job_router::RunnerRouter;
+use aide_de_camp::runner::job_runner::JobRunner;
+use aide_de_camp_sqlite::queue::SqliteQueue;
+use aide_de_camp_sqlite::SCHEMA_SQL;
+use anyhow::anyhow;
+use async_trait::async_trait;
 use bincode::{Decode, Encode};
 use futures::channel::mpsc::{unbounded, UnboundedSender};
 use futures::StreamExt;
@@ -153,11 +152,11 @@ async fn main() {
         results[(count * 19) / 20].duration_millis,
     );
 
+    println!("Total processing time: {}s", total_duration.as_secs());
     println!("Processed: {} jobs", processed.load(Ordering::SeqCst));
     println!("min: {}ms", min);
     println!("max: {}ms", max);
     println!("median: {}ms", median);
     println!("95th percentile: {}ms", pct);
     println!("throughput: {}/s", throughput);
-    queue.print_job_queue().await.unwrap();
 }

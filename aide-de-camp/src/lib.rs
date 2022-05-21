@@ -1,7 +1,21 @@
-pub mod job_runner;
+#![doc = include_str!("../README.md")]
 
-pub use aide_de_camp_core as core;
-pub use aide_de_camp_sqlite;
+pub mod core;
+
+/// Default implementation of job runner.
+#[cfg(feature = "runner")]
+pub mod runner {
+    pub mod job_router;
+    pub mod job_runner;
+    pub mod wrapped_job;
+}
+
+pub mod prelude {
+    pub use bincode::{Encode, Decode};
+    pub use super::core::{Xid,Duration,job_processor::{JobHandler,JobError}, queue::{Queue, QueueError}, job_handle::JobHandle};
+    #[cfg(feature = "runner")]
+    pub use super::runner::{job_runner::JobRunner, job_router::RunnerRouter};
+}
 
 #[cfg(test)]
 mod tests {

@@ -2,19 +2,30 @@
 name = "aide-de-camp-sqlite"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/zero-assumptions/aide-de-camp"
+documentation = "https://docs.rs/aide-de-camp-sqlite"
+description = "SQLite implementation of Queue trait from aide-de-camp"
+keywords = ["job", "scheduler", "queue", "sqlite", "database"]
+authors = ["Andrey Snow <andoriyu@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aide-de-camp-core = { path = "../aide-de-camp-core", version = "0.1.0" }
+aide-de-camp = { path = "../aide-de-camp", version = "0.1.0", features = ["runner"] }
 sqlx = {version = "0.5.13", default-features = false , features = ["sqlite", "macros", "chrono", "offline"]}
-bincode = "2.0.0-beta.2"
+bincode = "2.0.0-rc.1"
 tracing = "0.1.30"
+async-trait = "0.1.52"
+anyhow = "1.0.53"
 
 [dev-dependencies]
 tracing-subscriber = "0.3.8"
+tokio = { version = "1", features = ["macros"] }
 
 [features]
 default = ["native-tls"]
 native-tls = ["sqlx/runtime-tokio-native-tls"]
 rustls = ["sqlx/runtime-tokio-rustls"]
+

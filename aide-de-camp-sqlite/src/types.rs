@@ -1,5 +1,4 @@
-use aide_de_camp_core::bytes::Bytes;
-use aide_de_camp_core::{DateTime, Xid};
+use aide_de_camp::core::{Bytes, DateTime, Xid};
 use sqlx::sqlite::SqliteRow;
 use sqlx::{Error, FromRow, Row};
 use std::str::FromStr;

@@ -17,21 +17,12 @@ dependencies = [
 name = "aide-de-camp"
 version = "0.1.0"
 dependencies = [
- "aide-de-camp-core",
- "aide-de-camp-sqlite",
- "rand",
- "tracing",
-]
-
-[[package]]
-name = "aide-de-camp-core"
-version = "0.1.0"
-dependencies = [
  "anyhow",
  "async-trait",
  "bincode",
  "bytes",
  "chrono",
+ "rand",
  "thiserror",
  "tokio",
  "tracing",
@@ -42,9 +33,12 @@ dependencies = [
 name = "aide-de-camp-sqlite"
 version = "0.1.0"
 dependencies = [
- "aide-de-camp-core",
+ "aide-de-camp",
+ "anyhow",
+ "async-trait",
  "bincode",
  "sqlx",
+ "tokio",
  "tracing",
  "tracing-subscriber",
 ]
@@ -54,6 +48,9 @@ name = "aide-de-camp-sqlite-bench"
 version = "0.1.0"
 dependencies = [
  "aide-de-camp",
+ "aide-de-camp-sqlite",
+ "anyhow",
+ "async-trait",
  "bincode",
  "futures",
  "sqlx",
