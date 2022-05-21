@@ -67,8 +67,8 @@ aide-de-camp-sqlite = "0.1.0"  # Or any other avaiable backend
 
 ## Components
 
--**core**. Traits and error types meant to be used by aide-de-camp eco-system.
--**runner**. Optional module (`runner` feature enabled by default) that contains default implementations of runner, job router and types required for their work.
+- **core**. Traits and error types meant to be used by aide-de-camp eco-system.
+- **runner**. Optional module (`runner` feature enabled by default) that contains default implementations of runner, job router and types required for their work.
 
 [^1]: Currently only SQLite supported (`aide-de-camp-sqlite`), but PostgreSQL coming soon!
 
