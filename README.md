@@ -37,8 +37,8 @@ Aide-De-Camp is a backend agnostic delayed job queue. Very similar to [`girl_fri
 Notable features:
 
 - **Asynchronous**. Built from the ground-up using async/await for maximum concurrency.
-- **Backend agnostic**[^1]. Not forcing you to run any additional software you don't want to.
-- **Flexible scheduling**. Schedule your job to run "now", in time relative to now or at specific future time.
+- **Backend agnostic**[^1]. This crate won't force you to run any additional software you don't want to.
+- **Flexible scheduling**. Schedule your job to run right now, in time relative to now or at a specific future time.
 - **Binary Payloads**. Job payloads serialized with bincode for maximum speed and space efficiency.
 - **Concurrency limits.** Specify desired concurrency for each runner.
 - **Job Router**. Run as many job types as you want and limit which runners can process which jobs.
@@ -49,7 +49,7 @@ Notable features:
 
 ### Installing
 
-Pick a backend[^1] that suits you and add following to
+Pick a backend[^1] that suits you and add following to your `Cargo.toml`:
 
 ```toml
 # Cargo.toml
@@ -70,7 +70,7 @@ aide-de-camp-sqlite = "0.1.0"  # Or any other avaiable backend
 - **core**. Traits and error types meant to be used by aide-de-camp eco-system.
 - **runner**. Optional module (`runner` feature enabled by default) that contains default implementations of runner, job router and types required for their work.
 
-[^1]: Currently only SQLite supported (`aide-de-camp-sqlite`), but PostgreSQL coming soon!
+[^1]: Currently, only SQLite supported (`aide-de-camp-sqlite`), but PostgreSQL backend is coming soon!
 
 ## License
 
