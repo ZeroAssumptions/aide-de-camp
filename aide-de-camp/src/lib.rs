@@ -11,10 +11,15 @@ pub mod runner {
 }
 
 pub mod prelude {
-    pub use bincode::{Encode, Decode};
-    pub use super::core::{Xid,Duration,job_processor::{JobHandler,JobError}, queue::{Queue, QueueError}, job_handle::JobHandle};
+    pub use super::core::{
+        job_handle::JobHandle,
+        job_processor::{JobError, JobHandler},
+        queue::{Queue, QueueError},
+        Duration, Xid,
+    };
     #[cfg(feature = "runner")]
-    pub use super::runner::{job_runner::JobRunner, job_router::RunnerRouter};
+    pub use super::runner::{job_router::RunnerRouter, job_runner::JobRunner};
+    pub use bincode::{Decode, Encode};
 }
 
 #[cfg(test)]

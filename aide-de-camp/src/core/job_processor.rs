@@ -52,7 +52,6 @@ pub trait JobHandler: Send + Sync {
         Self: Sized;
 }
 
-
 /// Error types returned by job processor that wraps your job processor.
 #[derive(Error, Debug)]
 pub enum JobError {

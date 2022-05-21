@@ -18,12 +18,8 @@ jobs:
         with:
           filters: |
             aide-de-camp:
-              - 'aide-de-camp-core/**'
               - 'aide-de-camp-sqlite/**'
-            aide-de-camp-core:
-              - 'aide-de-camp-core/**'
             aide-de-camp-sqlite:
-              - 'aide-de-camp-core/**'
               - 'aide-de-camp-sqlite/**'
   code-style:
     runs-on: ubuntu-latest

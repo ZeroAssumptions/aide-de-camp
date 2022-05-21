@@ -8,7 +8,6 @@ use async_trait::async_trait;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use tracing::instrument;
 
-
 /// SQLite implementation of the Queue.
 #[derive(Clone)]
 pub struct SqliteQueue {

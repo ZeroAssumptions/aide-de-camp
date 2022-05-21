@@ -1,12 +1,12 @@
+use super::wrapped_job::{BoxedJobHandler, WrappedJobHandler};
+use crate::core::job_handle::JobHandle;
+use crate::core::job_processor::{JobError, JobHandler};
+use crate::core::queue::{Queue, QueueError};
 use bincode::{self, Decode, Encode};
 use chrono::Duration;
 use std::collections::HashMap;
 use thiserror::Error;
 use tracing::instrument;
-use super::wrapped_job::{BoxedJobHandler, WrappedJobHandler};
-use crate::core::job_handle::JobHandle;
-use crate::core::job_processor::{JobError, JobHandler};
-use crate::core::queue::{Queue, QueueError};
 
 /// A job processor router. Matches job type to job processor implementation.
 /// This type requires that your jobs implement `Encode` + `Decode` from bincode trait. Those traits are re-exported in prelude.

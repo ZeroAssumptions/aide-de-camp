@@ -7,7 +7,6 @@ use tokio::sync::Semaphore;
 
 pub const JITTER_INTERVAL_MS: [i64; 10] = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34];
 
-
 /// A bridge between job processors and the queue.
 ///
 /// ## Implementation
