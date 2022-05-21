@@ -1,10 +1,9 @@
 use crate::types::JobRow;
-use aide_de_camp_core::anyhow::Context;
-use aide_de_camp_core::async_trait::async_trait;
-use aide_de_camp_core::bytes::Bytes;
-use aide_de_camp_core::error::QueueError;
-use aide_de_camp_core::queue::JobHandle;
-use aide_de_camp_core::Xid;
+use aide_de_camp::core::job_handle::JobHandle;
+use aide_de_camp::core::queue::QueueError;
+use aide_de_camp::core::{Bytes, Xid};
+use anyhow::Context;
+use async_trait::async_trait;
 use sqlx::SqlitePool;
 
 pub struct SqliteJobHandle {

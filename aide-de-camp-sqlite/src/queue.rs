@@ -1,15 +1,14 @@
 use crate::job_handle::SqliteJobHandle;
 use crate::types::JobRow;
-use aide_de_camp_core::anyhow::Context;
-use aide_de_camp_core::async_trait::async_trait;
-use aide_de_camp_core::chrono::{DateTime, Utc};
-use aide_de_camp_core::error::{JobError, QueueError};
-use aide_de_camp_core::job::JobHandler;
-use aide_de_camp_core::queue::Queue;
-use aide_de_camp_core::{xid, Xid};
-use bincode::{Decode, Encode};
+use aide_de_camp::core::job_processor::JobHandler;
+use aide_de_camp::core::queue::{Queue, QueueError};
+use aide_de_camp::core::{bincode::Encode, new_xid, DateTime, Xid};
+use anyhow::Context;
+use async_trait::async_trait;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
+use tracing::instrument;
 
+/// SQLite implementation of the Queue.
 #[derive(Clone)]
 pub struct SqliteQueue {
     pool: SqlitePool,
@@ -23,33 +22,28 @@ impl SqliteQueue {
             bincode_config: bincode::config::standard(),
         }
     }
-
-    pub async fn print_job_queue(&self) -> Result<(), sqlx::Error> {
-        let rows = sqlx::query_scalar!("SELECT jid FROM adc_queue")
-            .fetch_all(&self.pool)
-            .await?;
-        println!("{:?}", rows);
-        Ok(())
-    }
 }
 
 #[async_trait]
 impl Queue for SqliteQueue {
     type JobHandle = SqliteJobHandle;
+
+    #[instrument(skip_all, err, ret, fields(job_type = J::name(), payload_size))]
     async fn schedule_at<J>(
         &self,
         payload: J::Payload,
-        scheduled_at: DateTime<Utc>,
+        scheduled_at: DateTime,
     ) -> Result<Xid, QueueError>
     where
         J: JobHandler + 'static,
-        J::Payload: Decode + Encode,
-        J::Error: Into<JobError>,
+        J::Payload: Encode,
     {
-        let payload = bincode::encode_to_vec(payload, self.bincode_config)?;
-        let jid = xid::new();
+        let payload = bincode::encode_to_vec(&payload, self.bincode_config)?;
+        let jid = new_xid();
         let jid_string = jid.to_string();
         let job_type = J::name();
+
+        tracing::Span::current().record("payload_size", &payload.len());
 
         sqlx::query!(
             "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at) VALUES (?1,?2,?3,?4)",
@@ -63,10 +57,12 @@ impl Queue for SqliteQueue {
         .context("Failed to add job to the queue")?;
         Ok(jid)
     }
+
+    #[instrument(skip_all, err)]
     async fn poll_next_with_instant(
         &self,
         job_types: &[&str],
-        now: DateTime<Utc>,
+        now: DateTime,
     ) -> Result<Option<SqliteJobHandle>, QueueError> {
         let mut builder = QueryBuilder::new(
             "UPDATE adc_queue SET started_at=(strftime('%s', 'now')),retries=retries+1 ",
