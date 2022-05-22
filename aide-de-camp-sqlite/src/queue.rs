@@ -1,6 +1,6 @@
 use crate::job_handle::SqliteJobHandle;
 use crate::types::JobRow;
-use aide_de_camp::core::job_processor::JobHandler;
+use aide_de_camp::core::job_processor::JobProcessor;
 use aide_de_camp::core::queue::{Queue, QueueError};
 use aide_de_camp::core::{bincode::Encode, new_xid, DateTime, Xid};
 use anyhow::Context;
@@ -35,7 +35,7 @@ impl Queue for SqliteQueue {
         scheduled_at: DateTime,
     ) -> Result<Xid, QueueError>
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Encode,
     {
         let payload = bincode::encode_to_vec(&payload, self.bincode_config)?;

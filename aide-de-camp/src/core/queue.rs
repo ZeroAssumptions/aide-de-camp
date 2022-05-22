@@ -4,7 +4,7 @@ use chrono::Utc;
 use thiserror::Error;
 
 use crate::core::job_handle::JobHandle;
-use crate::core::job_processor::JobHandler;
+use crate::core::job_processor::JobProcessor;
 use crate::core::{DateTime, Duration, Xid};
 
 /// An interface to queue implementation. Reponsible for pushing jobs into the queue and pulling
@@ -19,12 +19,12 @@ pub trait Queue: Send + Sync {
         scheduled_at: DateTime,
     ) -> Result<Xid, QueueError>
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Encode;
     /// Schedule a job to run next. Depending on queue backlog this may start running later than you expect.
     async fn schedule<J>(&self, payload: J::Payload) -> Result<Xid, QueueError>
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Encode,
     {
         self.schedule_at::<J>(payload, Utc::now()).await
@@ -37,7 +37,7 @@ pub trait Queue: Send + Sync {
         scheduled_in: Duration,
     ) -> Result<Xid, QueueError>
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Encode,
     {
         let when = Utc::now() + scheduled_in;

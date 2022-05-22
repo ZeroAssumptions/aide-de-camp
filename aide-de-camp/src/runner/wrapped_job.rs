@@ -1,4 +1,4 @@
-use crate::core::job_processor::{JobError, JobHandler};
+use crate::core::job_processor::{JobError, JobProcessor};
 use crate::core::Xid;
 use async_trait::async_trait;
 use bincode::{config::Configuration, Decode, Encode};
@@ -6,18 +6,18 @@ use bytes::Bytes;
 use tracing::instrument;
 
 /// Shorthand for boxed trait object for a WrappedJob.
-pub type BoxedJobHandler = Box<dyn JobHandler<Payload = Bytes, Error = JobError>>;
+pub type BoxedJobHandler = Box<dyn JobProcessor<Payload = Bytes, Error = JobError>>;
 
 /// Object-safe implementation of a job that can be used in runner. Generally speaking, you don't
 /// need to directly use this type, JobRouter takes care of everything related to it.
-pub struct WrappedJobHandler<T: JobHandler> {
+pub struct WrappedJobHandler<T: JobProcessor> {
     job: T,
     config: Configuration,
 }
 
 impl<J> WrappedJobHandler<J>
 where
-    J: JobHandler + 'static,
+    J: JobProcessor + 'static,
     J::Payload: Decode + Encode,
     J::Error: Into<JobError>,
 {
@@ -32,9 +32,9 @@ where
 }
 
 #[async_trait]
-impl<J> JobHandler for WrappedJobHandler<J>
+impl<J> JobProcessor for WrappedJobHandler<J>
 where
-    J: JobHandler + 'static,
+    J: JobProcessor + 'static,
     J::Payload: Decode + Encode,
     J::Error: Into<JobError>,
 {
@@ -54,7 +54,7 @@ where
 
 impl<J> From<J> for WrappedJobHandler<J>
 where
-    J: JobHandler + 'static,
+    J: JobProcessor + 'static,
     J::Payload: Decode + Encode,
     J::Error: Into<JobError>,
 {

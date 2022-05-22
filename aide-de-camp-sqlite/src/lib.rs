@@ -1,67 +1,10 @@
-//! # aide-de-camp-sqlite
-//!
-//! A SQLite backed implementation of the job Queue.
-//!
-//! NOTE: It is possible that a single job gets sent to two runners. This is due to SQLite lacking
-//! row locking and `BEGIN EXCLUSIVE TRANSACTION` not working well (it was very slow) for this use
-//! case. This is only an issue at high concurrency, in which case you probably don't want to use
-//! SQLite in the first place. In other words, this isn't "Exactly Once" kind of queue.
-//!
-//! ## Example
-//!
-//! ```no_run
-//! use aide_de_camp_sqlite::{SqliteQueue, SCHEMA_SQL};
-//! use aide_de_camp::prelude::{Queue, JobHandler, JobRunner, RunnerRouter, Duration, Xid};
-//! use async_trait::async_trait;
-//! use sqlx::SqlitePool;
-//!
-//! struct MyJob;
-//!
-//! #[async_trait::async_trait]
-//! impl JobHandler for MyJob {
-//!     type Payload = Vec<u32>;
-//!     type Error = anyhow::Error;
-//!
-//!     async fn handle(&self, jid: Xid, payload: Self::Payload) -> Result<(), Self::Error> {
-//!         // Do work here
-//!         Ok(())
-//!     }
-//!
-//!     fn name() -> &'static str {
-//!         "my_job"
-//!     }
-//! }
-//!
-//! #[tokio::main]
-//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!
-//!     let pool = SqlitePool::connect(":memory:").await?;
-//!     // Setup schema, alternatively you can add schema to your migrations.
-//!     sqlx::query(SCHEMA_SQL).execute(&pool).await?;
-//!     let queue = SqliteQueue::with_pool(pool);
-//!
-//!     // Add job the queue to run next
-//!     let _jid = queue.schedule::<MyJob>(vec![1,2,3]).await?;
-//!
-//!     // First create a job processor and router
-//!     let router = {
-//!         let mut r = RunnerRouter::default();
-//!         r.add_job_handler(MyJob);
-//!         r
-//!     };
-//!     // Setup runner to at most 10 jobs concurrently
-//!     let mut runner = JobRunner::new(queue, router, 10);
-//!     // Poll the queue every second, this will block unless something went really wrong.
-//!     runner.run(Duration::seconds(1)).await?;
-//!     Ok(())
-//! }
-//! ```
+#![doc = include_str!("../README.md")]
+
 pub mod job_handle;
 pub mod queue;
 pub mod types;
 
 pub use queue::SqliteQueue;
-
 pub const SCHEMA_SQL: &str = include_str!("../sql/schema.sql");
 
 #[cfg(test)]
@@ -70,7 +13,7 @@ mod test {
     use crate::SCHEMA_SQL;
     use aide_de_camp::core::bincode::{Decode, Encode};
     use aide_de_camp::core::job_handle::JobHandle;
-    use aide_de_camp::core::job_processor::JobHandler;
+    use aide_de_camp::core::job_processor::JobProcessor;
     use aide_de_camp::core::queue::Queue;
     use aide_de_camp::core::{Duration, Xid};
     use async_trait::async_trait;
@@ -114,7 +57,7 @@ mod test {
     struct TestJob1;
 
     #[async_trait]
-    impl JobHandler for TestJob1 {
+    impl JobProcessor for TestJob1 {
         type Payload = TestPayload;
         type Error = Infallible;
 

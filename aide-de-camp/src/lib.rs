@@ -10,10 +10,11 @@ pub mod runner {
     pub mod wrapped_job;
 }
 
+/// Re-exports to simplify importing this crate types.
 pub mod prelude {
     pub use super::core::{
         job_handle::JobHandle,
-        job_processor::{JobError, JobHandler},
+        job_processor::{JobError, JobProcessor},
         queue::{Queue, QueueError},
         Duration, Xid,
     };
