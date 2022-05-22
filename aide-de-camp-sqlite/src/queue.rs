@@ -1,6 +1,6 @@
 use crate::job_handle::SqliteJobHandle;
 use crate::types::JobRow;
-use aide_de_camp::core::job_processor::JobHandler;
+use aide_de_camp::core::job_processor::JobProcessor;
 use aide_de_camp::core::queue::{Queue, QueueError};
 use aide_de_camp::core::{bincode::Encode, new_xid, DateTime, Xid};
 use anyhow::Context;
@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use tracing::instrument;
 
-/// SQLite implementation of the Queue.
+/// An implementation of the Queue backed by SQlite
 #[derive(Clone)]
 pub struct SqliteQueue {
     pool: SqlitePool,
@@ -35,7 +35,7 @@ impl Queue for SqliteQueue {
         scheduled_at: DateTime,
     ) -> Result<Xid, QueueError>
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Encode,
     {
         let payload = bincode::encode_to_vec(&payload, self.bincode_config)?;
@@ -86,7 +86,7 @@ impl Queue for SqliteQueue {
             .try_map(|row| JobRow::from_row(&row))
             .fetch_optional(&self.pool)
             .await
-            .context("Failed to checkout out job from the queue")?;
+            .context("Failed to check out a job from the queue")?;
 
         if let Some(row) = row {
             Ok(Some(SqliteJobHandle::new(row, self.pool.clone())))

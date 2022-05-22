@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS adc_queue (
  jid TEXT PRIMARY KEY,
  queue TEXT NOT NULL default 'default',

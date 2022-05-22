@@ -8,14 +8,14 @@ use thiserror::Error;
 ///
 /// ## Example
 /// ```rust
-/// use aide_de_camp::prelude::{JobHandler, Encode, Decode, Xid};
+/// use aide_de_camp::prelude::{JobProcessor, Encode, Decode, Xid};
 /// use async_trait::async_trait;
 /// struct MyJob;
 /// #[derive(Encode, Decode)]
 /// struct MyJobPayload(u8, String);
 ///
 /// #[async_trait::async_trait]
-/// impl JobHandler for MyJob {
+/// impl JobProcessor for MyJob {
 ///     type Payload = MyJobPayload;
 ///     type Error = anyhow::Error;
 ///
@@ -30,10 +30,10 @@ use thiserror::Error;
 /// }
 /// ```
 /// ## Services
-/// If your job processor requires external services (i.e. database client, REST client, etc), add
+/// If your job processor requires external services (i.e. database client, REST client, etc.), add
 /// them directly as your struct fields.
 #[async_trait]
-pub trait JobHandler: Send + Sync {
+pub trait JobProcessor: Send + Sync {
     /// What is the input to this handler. If you want to use `RunnerRouter`, then this must implement `bincode::Decode` and `bincode::Encode`.
     type Payload: Send;
     /// What error is returned

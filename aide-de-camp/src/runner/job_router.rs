@@ -1,6 +1,6 @@
 use super::wrapped_job::{BoxedJobHandler, WrappedJobHandler};
 use crate::core::job_handle::JobHandle;
-use crate::core::job_processor::{JobError, JobHandler};
+use crate::core::job_processor::{JobError, JobProcessor};
 use crate::core::queue::{Queue, QueueError};
 use bincode::{self, Decode, Encode};
 use chrono::Duration;
@@ -13,14 +13,14 @@ use tracing::instrument;
 ///
 /// ## Example
 /// ```rust
-/// use aide_de_camp::prelude::{JobHandler, RunnerRouter, Encode, Decode, Xid};
+/// use aide_de_camp::prelude::{JobProcessor, RunnerRouter, Encode, Decode, Xid};
 /// use async_trait::async_trait;
 /// struct MyJob;
 /// #[derive(Encode, Decode)]
 /// struct MyJobPayload(u8, String);
 ///
 /// #[async_trait::async_trait]
-/// impl JobHandler for MyJob {
+/// impl JobProcessor for MyJob {
 ///     type Payload = MyJobPayload;
 ///     type Error = anyhow::Error;
 ///
@@ -50,7 +50,7 @@ impl RunnerRouter {
     /// Register a job handler with the router. If job by that name already present, it will get replaced.
     pub fn add_job_handler<J>(&mut self, job: J)
     where
-        J: JobHandler + 'static,
+        J: JobProcessor + 'static,
         J::Payload: Decode + Encode,
         J::Error: Into<JobError>,
     {
@@ -150,7 +150,7 @@ mod test {
         struct Example;
 
         #[async_trait::async_trait]
-        impl JobHandler for Example {
+        impl JobProcessor for Example {
             type Payload = Vec<i32>;
             type Error = Infallible;
 
@@ -165,10 +165,10 @@ mod test {
 
         let payload = vec![1, 2, 3];
 
-        let job: Box<dyn JobHandler<Payload = _, Error = _>> = Box::new(Example);
+        let job: Box<dyn JobProcessor<Payload = _, Error = _>> = Box::new(Example);
 
         job.handle(xid::new(), payload.clone()).await.unwrap();
-        let wrapped: Box<dyn JobHandler<Payload = _, Error = JobError>> =
+        let wrapped: Box<dyn JobProcessor<Payload = _, Error = JobError>> =
             Box::new(WrappedJobHandler::new(Example));
 
         let payload = bincode::encode_to_vec(&payload, standard()).unwrap();

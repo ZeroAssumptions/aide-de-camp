@@ -1,4 +1,4 @@
-use aide_de_camp::core::job_processor::{JobError, JobHandler};
+use aide_de_camp::core::job_processor::{JobError, JobProcessor};
 use aide_de_camp::core::queue::Queue;
 use aide_de_camp::core::Xid;
 use aide_de_camp::core::{Duration, Utc};
@@ -42,7 +42,7 @@ struct BenchJob {
 }
 
 #[async_trait]
-impl JobHandler for BenchJob {
+impl JobProcessor for BenchJob {
     type Payload = BenchJobPayload;
     type Error = JobError;
 
