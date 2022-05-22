@@ -1,6 +1,6 @@
 [package]
 name = "aide-de-camp-sqlite"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,7 +13,7 @@ authors = ["Andrey Snow <andoriyu@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aide-de-camp = { path = "../aide-de-camp", version = "0.1.0", features = ["runner"] }
+aide-de-camp = { path = "../aide-de-camp", version = "0.1.1", features = ["runner"] }
 sqlx = {version = "0.5.13", default-features = false , features = ["sqlite", "macros", "chrono", "offline"]}
 bincode = "2.0.0-rc.1"
 tracing = "0.1.30"
