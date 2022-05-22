@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use tracing::instrument;
 
-/// SQLite implementation of the Queue.
+/// An implementation of the Queue backed by SQlite
 #[derive(Clone)]
 pub struct SqliteQueue {
     pool: SqlitePool,
@@ -86,7 +86,7 @@ impl Queue for SqliteQueue {
             .try_map(|row| JobRow::from_row(&row))
             .fetch_optional(&self.pool)
             .await
-            .context("Failed to checkout out job from the queue")?;
+            .context("Failed to check out a job from the queue")?;
 
         if let Some(row) = row {
             Ok(Some(SqliteJobHandle::new(row, self.pool.clone())))

@@ -30,4 +30,4 @@ tokio = { version = "1", features = ["macros"] }
 
 [features]
 default = ["runner"]
-runner = ["tokio/rt", "dep:rand"]
+runner = ["tokio/rt", "rand"]

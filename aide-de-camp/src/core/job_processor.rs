@@ -30,7 +30,7 @@ use thiserror::Error;
 /// }
 /// ```
 /// ## Services
-/// If your job processor requires external services (i.e. database client, REST client, etc), add
+/// If your job processor requires external services (i.e. database client, REST client, etc.), add
 /// them directly as your struct fields.
 #[async_trait]
 pub trait JobHandler: Send + Sync {

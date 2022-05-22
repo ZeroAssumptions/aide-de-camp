@@ -51,7 +51,7 @@
 //!     };
 //!     // Setup runner to at most 10 jobs concurrently
 //!     let mut runner = JobRunner::new(queue, router, 10);
-//!     // Poll queue every second, this will block unless something went really wrong.
+//!     // Poll the queue every second, this will block unless something went really wrong.
 //!     runner.run(Duration::seconds(1)).await?;
 //!     Ok(())
 //! }

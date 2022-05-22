@@ -10,11 +10,11 @@
 
 <div align="center">
   <h4>
-    <a href="#install">
+    <a href="#Install">
       Install
     </a>
     <span> | </span>
-    <a href="#usage">
+    <a href="#Usage">
       Usage
     </a>
     <span> | </span>
@@ -32,7 +32,7 @@
 
 <br />
 
-Aide-De-Camp is a backend agnostic delayed job queue. Very similar to [`girl_friday`](https://github.com/mperham/girl_friday) from Ruby world.
+Aide-De-Camp is a backend agnostic delayed job queue. Very similar to [`girl_friday`](https://github.com/mperham/girl_friday) from the Ruby world.
 
 Notable features:
 
@@ -47,7 +47,7 @@ Notable features:
 
 ## Getting started
 
-### Installing
+### Install
 
 Pick a backend[^1] that suits you and add following to your `Cargo.toml`:
 
@@ -67,7 +67,7 @@ aide-de-camp-sqlite = "0.1.0"  # Or any other avaiable backend
 
 ## Components
 
-- **core**. Traits and error types meant to be used by aide-de-camp eco-system.
+- **core**. Traits and error types meant to be used by aide-de-camp ecosystem.
 - **runner**. Optional module (`runner` feature enabled by default) that contains default implementations of runner, job router and types required for their work.
 
 [^1]: Currently, only SQLite supported (`aide-de-camp-sqlite`), but PostgreSQL backend is coming soon!
