@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup runner to at most 10 jobs concurrently
     let mut runner = JobRunner::new(queue, router, 10);
     // Poll the queue every second, this will block unless something went really wrong.
-    // runner.run(Duration::seconds(1)).await?; // Commented so it doesn't endlessly block this doctest.
+    // runner.run(Duration::seconds(1)).await?; // Commented to avoid endlessly blocking this doctest.
     Ok(())
 }
 ```
