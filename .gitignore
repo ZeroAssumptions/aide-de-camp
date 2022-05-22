@@ -14,3 +14,4 @@ state.*
 .direnv
 aide-de-camp-sqlite/sqlite.db
 
+Cargo.lock
