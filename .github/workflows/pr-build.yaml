@@ -12,6 +12,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           level: info
+          patterns: '**/*.md **/*.txt **/*.rs'
   changes:
     runs-on: ubuntu-latest
     outputs:
