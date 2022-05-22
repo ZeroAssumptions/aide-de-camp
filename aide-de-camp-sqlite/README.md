@@ -48,14 +48,14 @@ Schema also included into this crate as `SCHEMA_SQL` constant in this crate.
 ```rust
 
 use aide_de_camp_sqlite::{SqliteQueue, SCHEMA_SQL};
-use aide_de_camp::prelude::{Queue, JobHandler, JobRunner, RunnerRouter, Duration, Xid};
+use aide_de_camp::prelude::{Queue, JobProcessor, JobRunner, RunnerRouter, Duration, Xid};
 use async_trait::async_trait;
 use sqlx::SqlitePool;
 
 struct MyJob;
 
 #[async_trait::async_trait]
-impl JobHandler for MyJob {
+impl JobProcessor for MyJob {
     type Payload = Vec<u32>;
     type Error = anyhow::Error;
 
