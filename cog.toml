@@ -1,0 +1,17 @@
+ignore_merge_commits = true
+branch_whitelist = ["main"]
+pre_bump_hooks = [
+	"cargo test",
+	"cargo fmt --all",
+	"cargo set-version {{version}}",
+	"cargo build --release",
+]
+post_bump_hooks = []
+
+[commit_types]
+
+[changelog]
+path = "CHANGELOG.md"
+authors = []
+
+[bump_profiles]
