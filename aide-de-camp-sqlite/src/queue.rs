@@ -43,7 +43,7 @@ impl Queue for SqliteQueue {
         let jid_string = jid.to_string();
         let job_type = J::name();
 
-        tracing::Span::current().record("payload_size", &payload.len());
+        tracing::Span::current().record("payload_size", payload.len());
 
         sqlx::query!(
             "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at) VALUES (?1,?2,?3,?4)",
