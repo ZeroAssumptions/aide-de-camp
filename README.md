@@ -3,6 +3,7 @@
  <strong>
    💂 Aide-De-Camp
  </strong>
+ 
 </div>
 
 <br />
@@ -28,8 +29,17 @@
 
 <div align="center">
   <small>Built with ❤️ by <a href="https://zeroassumptions.dev">Zero Assumptions</a></small>
+
 </div>
 
+<br />
+
+![crates.io](https://img.shields.io/crates/v/aide-de-camp.svg)
+![pr-build](https://github.com/ZeroAssumptions/aide-de-camp/actions/workflows/pr-build.yaml/badge.svg)
+[![CLA assistant](https://cla-assistant.io/readme/badge/ZeroAssumptions/aide-de-camp)](https://cla-assistant.io/ZeroAssumptions/aide-de-camp)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+ 
 <br />
 
 Aide-De-Camp is a backend agnostic delayed job queue. Very similar to [`girl_friday`](https://github.com/mperham/girl_friday) from the Ruby world.
@@ -85,6 +95,6 @@ at your option.
 
 ## Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
+Contributions are subject to CLA. Any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
