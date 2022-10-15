@@ -16,6 +16,7 @@ mod test {
     use aide_de_camp::core::job_processor::JobProcessor;
     use aide_de_camp::core::queue::Queue;
     use aide_de_camp::core::{Duration, Xid};
+    use aide_de_camp::prelude::QueueError;
     use async_trait::async_trait;
     use sqlx::types::chrono::Utc;
     use sqlx::SqlitePool;
@@ -39,13 +40,13 @@ mod test {
         pool
     }
 
-    #[derive(Encode, Decode)]
-    struct TestPayload {
+    #[derive(Encode, Decode, PartialEq, Clone, Debug)]
+    struct TestPayload1 {
         arg1: i32,
         arg2: String,
     }
 
-    impl Default for TestPayload {
+    impl Default for TestPayload1 {
         fn default() -> Self {
             Self {
                 arg1: 1774,
@@ -58,7 +59,63 @@ mod test {
 
     #[async_trait]
     impl JobProcessor for TestJob1 {
-        type Payload = TestPayload;
+        type Payload = TestPayload1;
+        type Error = Infallible;
+
+        async fn handle(&self, _jid: Xid, _payload: Self::Payload) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn name() -> &'static str
+        where
+            Self: Sized,
+        {
+            "test_job_1"
+        }
+    }
+
+    #[derive(Encode, Decode, PartialEq, Clone, Debug)]
+    struct TestPayload2 {
+        arg1: i32,
+        arg2: u64,
+        arg3: String,
+    }
+
+    impl Default for TestPayload2 {
+        fn default() -> Self {
+            Self {
+                arg1: 1774,
+                arg2: 42,
+                arg3: String::from("this is a test"),
+            }
+        }
+    }
+
+    struct TestJob2;
+
+    #[async_trait]
+    impl JobProcessor for TestJob2 {
+        type Payload = TestPayload2;
+        type Error = Infallible;
+
+        async fn handle(&self, _jid: Xid, _payload: Self::Payload) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        fn name() -> &'static str
+        where
+            Self: Sized,
+        {
+            "test_job_2"
+        }
+    }
+
+    // Job with payload2 but job_type is from TestJob1
+    struct TestJob3;
+
+    #[async_trait]
+    impl JobProcessor for TestJob3 {
+        type Payload = TestPayload2;
         type Error = Infallible;
 
         async fn handle(&self, _jid: Xid, _payload: Self::Payload) -> Result<(), Self::Error> {
@@ -85,7 +142,7 @@ mod test {
         }
         // Schedule a job to run now
         let jid1 = queue
-            .schedule::<TestJob1>(TestPayload::default())
+            .schedule::<TestJob1>(TestPayload1::default())
             .await
             .unwrap();
 
@@ -113,7 +170,7 @@ mod test {
 
         // Schedule a job to run now
         let _jid1 = queue
-            .schedule::<TestJob1>(TestPayload::default())
+            .schedule::<TestJob1>(TestPayload1::default())
             .await
             .unwrap();
 
@@ -135,10 +192,10 @@ mod test {
         let pool = make_pool(":memory:").await;
         let queue = SqliteQueue::with_pool(pool);
 
-        // Schedule to run job tomorrow
-        // Schedule a job to run now
+        // schedule to run job tomorrow
+        // schedule a job to run now
         let tomorrow_jid = queue
-            .schedule_in::<TestJob1>(TestPayload::default(), Duration::days(1))
+            .schedule_in::<TestJob1>(TestPayload1::default(), Duration::days(1))
             .await
             .unwrap();
 
@@ -150,7 +207,7 @@ mod test {
 
         let hour_ago = { Utc::now() - Duration::hours(1) };
         let hour_ago_jid = queue
-            .schedule_at::<TestJob1>(TestPayload::default(), hour_ago)
+            .schedule_at::<TestJob1>(TestPayload1::default(), hour_ago)
             .await
             .unwrap();
 
@@ -177,5 +234,73 @@ mod test {
                 .unwrap();
             assert!(job.is_none());
         }
+    }
+
+    #[tokio::test]
+    async fn cancel_job_not_started() {
+        let pool = make_pool(":memory:").await;
+        let queue = SqliteQueue::with_pool(pool);
+        let jid = queue
+            .schedule::<TestJob1>(TestPayload1::default())
+            .await
+            .unwrap();
+        queue.cancel_job(jid).await.unwrap();
+
+        // Should return None
+        {
+            let job = queue.poll_next(&[TestJob1::name()]).await.unwrap();
+            assert!(job.is_none());
+        }
+
+        // Should fail
+        let ret = queue.cancel_job(jid).await;
+        assert!(matches!(ret, Err(QueueError::JobNotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn cancel_job_return_payload() {
+        let pool = make_pool(":memory:").await;
+        let queue = SqliteQueue::with_pool(pool);
+        let payload = TestPayload1::default();
+        let jid = queue.schedule::<TestJob1>(payload.clone()).await.unwrap();
+
+        let deleted_payload = queue.unschedule_job::<TestJob1>(jid).await.unwrap();
+        assert_eq!(payload, deleted_payload);
+
+        let ret = queue.unschedule_job::<TestJob1>(jid).await;
+        assert!(matches!(ret, Err(QueueError::JobNotFound(_))));
+    }
+
+    #[tokio::test]
+    async fn cancel_wrong_type() {
+        let pool = make_pool(":memory:").await;
+        let queue = SqliteQueue::with_pool(pool);
+        let jid = queue
+            .schedule::<TestJob1>(TestPayload1::default())
+            .await
+            .unwrap();
+
+        let result = queue.unschedule_job::<TestJob2>(jid).await;
+        assert!(matches!(result, Err(QueueError::JobNotFound(_))));
+
+        let result = queue.unschedule_job::<TestJob3>(jid).await;
+        dbg!(&result);
+        assert!(matches!(result, Err(QueueError::DecodeError { .. })));
+    }
+
+    #[tokio::test]
+    async fn cancel_job_started() {
+        let pool = make_pool(":memory:").await;
+        let queue = SqliteQueue::with_pool(pool);
+        let payload = TestPayload1::default();
+        let jid = queue.schedule::<TestJob1>(payload.clone()).await.unwrap();
+
+        let _job = queue.poll_next(&[TestJob1::name()]).await.unwrap().unwrap();
+
+        let ret = queue.cancel_job(jid).await;
+        assert!(matches!(ret, Err(QueueError::JobNotFound(_))));
+
+        let ret = queue.unschedule_job::<TestJob1>(jid).await;
+        assert!(matches!(ret, Err(QueueError::JobNotFound(_))));
     }
 }
