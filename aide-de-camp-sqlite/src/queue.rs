@@ -5,6 +5,8 @@ use aide_de_camp::core::queue::{Queue, QueueError};
 use aide_de_camp::core::{bincode::Encode, new_xid, DateTime, Xid};
 use anyhow::Context;
 use async_trait::async_trait;
+use bincode::Decode;
+use sqlx::sqlite::SqliteQueryResult;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use tracing::instrument;
 
@@ -93,5 +95,43 @@ impl Queue for SqliteQueue {
         } else {
             Ok(None)
         }
+    }
+
+    #[instrument(skip_all, err)]
+    async fn cancel_job(&self, job_id: Xid) -> Result<(), QueueError> {
+        let jid = job_id.to_string();
+        let result: SqliteQueryResult = sqlx::query!(
+            "DELETE FROM adc_queue WHERE started_at IS NULL and jid = ?",
+            jid
+        )
+        .execute(&self.pool)
+        .await
+        .context("Failed to remove job from the queue")?;
+        if result.rows_affected() == 0 {
+            Err(QueueError::JobNotFound(job_id))
+        } else {
+            Ok(())
+        }
+    }
+
+    #[instrument(skip_all, err)]
+    async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
+    where
+        J: JobProcessor + 'static,
+        J::Payload: Decode,
+    {
+        let jid = job_id.to_string();
+        let job_type = J::name();
+        let payload = sqlx::query!(
+            "DELETE FROM adc_queue WHERE started_at IS NULL and jid = ? AND job_type = ? RETURNING *",
+            jid,
+            job_type)
+        .fetch_optional(&self.pool)
+        .await
+        .context("Failed to remove job from the queue")?
+        .map(|row| row.payload.unwrap_or_default())
+        .ok_or_else(||QueueError::JobNotFound(job_id))?;
+        let (decoded, _) = bincode::decode_from_slice(&payload, self.bincode_config)?;
+        Ok(decoded)
     }
 }

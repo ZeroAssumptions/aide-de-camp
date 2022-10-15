@@ -1,23 +1,5 @@
 {
   "db": "SQLite",
-  "0206dcb0b25c0beaddb8b169da7f60a5301275d19d82fe7e1ff2f91f90b9b567": {
-    "describe": {
-      "columns": [
-        {
-          "name": "jid",
-          "ordinal": 0,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        true
-      ],
-      "parameters": {
-        "Right": 0
-      }
-    },
-    "query": "SELECT jid FROM adc_queue"
-  },
   "2da89a793016c67949a2a228ffebd70a6dd315b20a35787598ac2c10ba78181e": {
     "describe": {
       "columns": [],
@@ -47,6 +29,76 @@
       }
     },
     "query": "DELETE FROM adc_queue where jid = ?1"
+  },
+  "7621f919fc2f38bb65606230b43156f609d9a6b625d97ad32c2e0bc6aba7005b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "DELETE FROM adc_queue WHERE started_at IS NULL and jid = ?"
+  },
+  "7ef27bc8cc8b9c6da438cea4f9a5f1f2afdabab54de3a31fdfc3289f62da7205": {
+    "describe": {
+      "columns": [
+        {
+          "name": "jid",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "queue",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "job_type",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "payload",
+          "ordinal": 3,
+          "type_info": "Blob"
+        },
+        {
+          "name": "retries",
+          "ordinal": 4,
+          "type_info": "Int64"
+        },
+        {
+          "name": "scheduled_at",
+          "ordinal": 5,
+          "type_info": "Int64"
+        },
+        {
+          "name": "started_at",
+          "ordinal": 6,
+          "type_info": "Int64"
+        },
+        {
+          "name": "enqueued_at",
+          "ordinal": 7,
+          "type_info": "Int64"
+        }
+      ],
+      "nullable": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "DELETE FROM adc_queue WHERE started_at IS NULL and jid = ? AND job_type = ? RETURNING *"
   },
   "90ff02e75816b440adb7fcf15d39a89892f021c6ab1d5c54fc582514ee00e3ee": {
     "describe": {

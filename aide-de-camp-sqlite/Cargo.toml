@@ -14,7 +14,7 @@ authors = ["Andrey Snow <andoriyu@gmail.com>"]
 
 [dependencies]
 aide-de-camp = { path = "../aide-de-camp", version = "0.1.1", features = ["runner"] }
-sqlx = {version = "0.5.13", default-features = false , features = ["sqlite", "macros", "chrono", "offline"]}
+sqlx = {version = "0.6.2", default-features = false , features = ["sqlite", "macros", "chrono", "offline"]}
 bincode = "2.0.0-rc.1"
 tracing = "0.1.30"
 async-trait = "0.1.52"

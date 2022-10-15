@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use bincode::Encode;
+use bincode::{Decode, Encode};
 use chrono::Utc;
 use thiserror::Error;
 
@@ -74,10 +74,21 @@ pub trait Queue: Send + Sync {
             }
         }
     }
+
+    /// Cancel job that has been scheduled. Right now this will only cancel if the job hasn't started yet.
+    async fn cancel_job(&self, job_id: Xid) -> Result<(), QueueError>;
+
+    /// The same as [`cancel_job`](struct.cancel_job.html), but returns payload of canceled job.
+    /// If deserialization fails, then job won't be cancelled.
+    async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
+    where
+        J: JobProcessor + 'static,
+        J::Payload: Decode;
 }
 
-/// Errors relateded to queue operation.
+/// Errors related to queue operation.
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum QueueError {
     /// Encountered an error when tried to serialize Context.
     #[error("Failed to serialize job context")]
@@ -85,9 +96,16 @@ pub enum QueueError {
         #[from]
         source: bincode::error::EncodeError,
     },
-
-    #[error("Interval must be more than zero: {0:?}")]
+    /// Encountered an error when tried to deserialize Context.
+    #[error("Failed to deserialize job context")]
+    DecodeError {
+        #[from]
+        source: bincode::error::DecodeError,
+    },
+    #[error("Interval must be greater than zero: {0:?}")]
     InvalidInterval(Duration),
+    #[error("Job by that ID does not exist: {0}")]
+    JobNotFound(Xid),
     #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
