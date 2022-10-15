@@ -35,6 +35,7 @@ impl Queue for SqliteQueue {
         &self,
         payload: J::Payload,
         scheduled_at: DateTime,
+        priority: i8,
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
@@ -48,11 +49,12 @@ impl Queue for SqliteQueue {
         tracing::Span::current().record("payload_size", payload.len());
 
         sqlx::query!(
-            "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at) VALUES (?1,?2,?3,?4)",
+            "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at,priority) VALUES (?1,?2,?3,?4,?5)",
             jid_string,
             job_type,
             payload,
-            scheduled_at
+            scheduled_at,
+            priority
         )
         .execute(&self.pool)
         .await
@@ -81,7 +83,7 @@ impl Queue for SqliteQueue {
                     separated.push_bind(job_type);
                 }
             }
-            builder.push(") limit 1) RETURNING *");
+            builder.push(") ORDER BY priority DESC LIMIT 1) RETURNING *");
             builder.build().bind(now)
         };
         let row = query
@@ -114,6 +116,7 @@ impl Queue for SqliteQueue {
         }
     }
 
+    #[allow(clippy::or_fun_call)]
     #[instrument(skip_all, err)]
     async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
     where
@@ -130,7 +133,7 @@ impl Queue for SqliteQueue {
         .await
         .context("Failed to remove job from the queue")?
         .map(|row| row.payload.unwrap_or_default())
-        .ok_or_else(||QueueError::JobNotFound(job_id))?;
+        .ok_or(QueueError::JobNotFound(job_id))?;
         let (decoded, _) = bincode::decode_from_slice(&payload, self.bincode_config)?;
         Ok(decoded)
     }

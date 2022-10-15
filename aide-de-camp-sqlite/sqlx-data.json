@@ -1,15 +1,5 @@
 {
   "db": "SQLite",
-  "2da89a793016c67949a2a228ffebd70a6dd315b20a35787598ac2c10ba78181e": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Right": 4
-      }
-    },
-    "query": "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at) VALUES (?1,?2,?3,?4)"
-  },
   "45bd3fdf8cae3adecfb6b2851010f7f9b6e67bb6005598b480b7a1ed59b212db": {
     "describe": {
       "columns": [],
@@ -29,6 +19,16 @@
       }
     },
     "query": "DELETE FROM adc_queue where jid = ?1"
+  },
+  "57789da912edf4d4b8c8fda95fb5ccbb139459bd6fa16ec421bf8f7d9ec209a0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "INSERT INTO adc_queue (jid,job_type,payload,scheduled_at,priority) VALUES (?1,?2,?3,?4,?5)"
   },
   "7621f919fc2f38bb65606230b43156f609d9a6b625d97ad32c2e0bc6aba7005b": {
     "describe": {
@@ -82,9 +82,15 @@
           "name": "enqueued_at",
           "ordinal": 7,
           "type_info": "Int64"
+        },
+        {
+          "name": "priority",
+          "ordinal": 8,
+          "type_info": "Int64"
         }
       ],
       "nullable": [
+        true,
         true,
         true,
         true,

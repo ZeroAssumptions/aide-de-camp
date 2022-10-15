@@ -5,12 +5,13 @@ pub mod queue;
 pub mod types;
 
 pub use queue::SqliteQueue;
-pub const SCHEMA_SQL: &str = include_str!("../sql/schema.sql");
+use sqlx::migrate::Migrator;
+pub static MIGRATOR: Migrator = sqlx::migrate!();
 
 #[cfg(test)]
 mod test {
     use crate::queue::SqliteQueue;
-    use crate::SCHEMA_SQL;
+    use crate::MIGRATOR;
     use aide_de_camp::core::bincode::{Decode, Encode};
     use aide_de_camp::core::job_handle::JobHandle;
     use aide_de_camp::core::job_processor::JobProcessor;
@@ -32,11 +33,7 @@ mod test {
 
     async fn make_pool(uri: &str) -> SqlitePool {
         let pool = SqlitePool::connect(uri).await.unwrap();
-        {
-            let mut tx = pool.begin().await.unwrap();
-            sqlx::query(SCHEMA_SQL).execute(&mut tx).await.unwrap();
-            tx.commit().await.unwrap();
-        }
+        MIGRATOR.run(&pool).await.unwrap();
         pool
     }
 
@@ -142,7 +139,7 @@ mod test {
         }
         // Schedule a job to run now
         let jid1 = queue
-            .schedule::<TestJob1>(TestPayload1::default())
+            .schedule::<TestJob1>(TestPayload1::default(), 0)
             .await
             .unwrap();
 
@@ -170,7 +167,7 @@ mod test {
 
         // Schedule a job to run now
         let _jid1 = queue
-            .schedule::<TestJob1>(TestPayload1::default())
+            .schedule::<TestJob1>(TestPayload1::default(), 0)
             .await
             .unwrap();
 
@@ -195,7 +192,7 @@ mod test {
         // schedule to run job tomorrow
         // schedule a job to run now
         let tomorrow_jid = queue
-            .schedule_in::<TestJob1>(TestPayload1::default(), Duration::days(1))
+            .schedule_in::<TestJob1>(TestPayload1::default(), Duration::days(1), 0)
             .await
             .unwrap();
 
@@ -207,7 +204,7 @@ mod test {
 
         let hour_ago = { Utc::now() - Duration::hours(1) };
         let hour_ago_jid = queue
-            .schedule_at::<TestJob1>(TestPayload1::default(), hour_ago)
+            .schedule_at::<TestJob1>(TestPayload1::default(), hour_ago, 0)
             .await
             .unwrap();
 
@@ -241,7 +238,7 @@ mod test {
         let pool = make_pool(":memory:").await;
         let queue = SqliteQueue::with_pool(pool);
         let jid = queue
-            .schedule::<TestJob1>(TestPayload1::default())
+            .schedule::<TestJob1>(TestPayload1::default(), 0)
             .await
             .unwrap();
         queue.cancel_job(jid).await.unwrap();
@@ -262,7 +259,10 @@ mod test {
         let pool = make_pool(":memory:").await;
         let queue = SqliteQueue::with_pool(pool);
         let payload = TestPayload1::default();
-        let jid = queue.schedule::<TestJob1>(payload.clone()).await.unwrap();
+        let jid = queue
+            .schedule::<TestJob1>(payload.clone(), 0)
+            .await
+            .unwrap();
 
         let deleted_payload = queue.unschedule_job::<TestJob1>(jid).await.unwrap();
         assert_eq!(payload, deleted_payload);
@@ -276,7 +276,7 @@ mod test {
         let pool = make_pool(":memory:").await;
         let queue = SqliteQueue::with_pool(pool);
         let jid = queue
-            .schedule::<TestJob1>(TestPayload1::default())
+            .schedule::<TestJob1>(TestPayload1::default(), 0)
             .await
             .unwrap();
 
@@ -293,7 +293,10 @@ mod test {
         let pool = make_pool(":memory:").await;
         let queue = SqliteQueue::with_pool(pool);
         let payload = TestPayload1::default();
-        let jid = queue.schedule::<TestJob1>(payload.clone()).await.unwrap();
+        let jid = queue
+            .schedule::<TestJob1>(payload.clone(), 0)
+            .await
+            .unwrap();
 
         let _job = queue.poll_next(&[TestJob1::name()]).await.unwrap().unwrap();
 
@@ -302,5 +305,23 @@ mod test {
 
         let ret = queue.unschedule_job::<TestJob1>(jid).await;
         assert!(matches!(ret, Err(QueueError::JobNotFound(_))));
+    }
+    #[tokio::test]
+    async fn priority_polling() {
+        let pool = make_pool(":memory:").await;
+        let queue = SqliteQueue::with_pool(pool);
+        let hour_ago = { Utc::now() - Duration::hours(1) };
+        let _hour_ago_jid = queue
+            .schedule_at::<TestJob1>(TestPayload1::default(), hour_ago, 0)
+            .await
+            .unwrap();
+
+        let higher_priority_jid = queue
+            .schedule_at::<TestJob1>(TestPayload1::default(), hour_ago, 3)
+            .await
+            .unwrap();
+
+        let job = queue.poll_next(&[TestJob1::name()]).await.unwrap().unwrap();
+        assert_eq!(higher_priority_jid, job.id());
     }
 }

@@ -5,7 +5,7 @@ use aide_de_camp::core::{Duration, Utc};
 use aide_de_camp::runner::job_router::RunnerRouter;
 use aide_de_camp::runner::job_runner::JobRunner;
 use aide_de_camp_sqlite::queue::SqliteQueue;
-use aide_de_camp_sqlite::SCHEMA_SQL;
+use aide_de_camp_sqlite::MIGRATOR;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bincode::{Decode, Encode};
@@ -68,18 +68,17 @@ impl JobProcessor for BenchJob {
 
 async fn make_pool() -> SqlitePool {
     let pool = SqlitePool::connect(":memory:").await.unwrap();
-    {
-        let mut tx = pool.begin().await.unwrap();
-        sqlx::query(SCHEMA_SQL).execute(&mut tx).await.unwrap();
-        tx.commit().await.unwrap();
-    }
+    MIGRATOR.run(&pool).await.unwrap();
     pool
 }
 async fn schedule_tasks(count: usize, interval: std::time::Duration, queue: Arc<SqliteQueue>) {
     let mut delay = tokio::time::interval(interval);
     for _ in 0..count {
         delay.tick().await;
-        if let Err(e) = queue.schedule::<BenchJob>(BenchJobPayload::default()).await {
+        if let Err(e) = queue
+            .schedule::<BenchJob>(BenchJobPayload::default(), 0)
+            .await
+        {
             eprintln!("Failed to schedule job: {}", e);
         }
     }
