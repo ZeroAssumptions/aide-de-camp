@@ -2,10 +2,10 @@
 
 A SQLite backed implementation of the job Queue.
 
-NOTE: It is possible that a single job gets sent to two runners. This is due to SQLite lacking
+**NOTE**: It is possible that a single job gets sent to two runners. This is due to SQLite lacking
 row locking and `BEGIN EXCLUSIVE TRANSACTION` not working well (it was very slow) for this use
 case. This is only an issue at high concurrency, in which case you probably don't want to use
-SQLite in the first place. In other words, this isn't "Exactly Once" kind of queue.
+SQLite in the first place. In other words, this isn't “Exactly Once” kind of queue.
 
 ## Schema
 
@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS adc_queue (
  retries int not null default 0,
  scheduled_at INTEGER not null,
  started_at INTEGER,
- enqueued_at INTEGER not null default (strftime('%s', 'now'))
+ enqueued_at INTEGER not null default (strftime('%s', 'now')),
+ priority TINYINT not null default 0,
 );
 
 CREATE TABLE IF NOT EXISTS adc_dead_queue (
@@ -30,7 +31,8 @@ CREATE TABLE IF NOT EXISTS adc_dead_queue (
  scheduled_at INTEGER not null,
  started_at INTEGER not null,
  enqueued_at INTEGER not null,
- died_at INTEGER not null default (strftime('%s', 'now'))
+ died_at INTEGER not null default (strftime('%s', 'now')),
+ priority TINYINT not null default 0,
 );
 
 CREATE INDEX IF NOT EXISTS adc_queue_jobs ON adc_queue (
@@ -41,13 +43,15 @@ CREATE INDEX IF NOT EXISTS adc_queue_jobs ON adc_queue (
 );
 ```
 
-Schema also included into this crate as `SCHEMA_SQL` constant in this crate.
+Crate includes [SQLx `MIGRATOR`](https://docs.rs/sqlx/0.4.0-beta.1/sqlx/macro.migrate.html) that could be used to manage schema.
+
+**NOTE:** [SQLx doesn't support](https://github.com/launchbadge/sqlx/issues/1698) multiple migrators in the same database. That means ADC should either have dedicated schema/database or it's your responsibility to apply migrations.
 
 ## Example
 
 ```rust
 
-use aide_de_camp_sqlite::{SqliteQueue, SCHEMA_SQL};
+use aide_de_camp_sqlite::{SqliteQueue, MIGRATOR};
 use aide_de_camp::prelude::{Queue, JobProcessor, JobRunner, RunnerRouter, Duration, Xid};
 use async_trait::async_trait;
 use sqlx::SqlitePool;
@@ -74,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool = SqlitePool::connect(":memory:").await?;
     // Setup schema, alternatively you can add schema to your migrations.
-    sqlx::query(SCHEMA_SQL).execute(&pool).await?;
+    MIGRATOR.run(&pool).await?;
     let queue = SqliteQueue::with_pool(pool);
 
     // Add job the queue to run next

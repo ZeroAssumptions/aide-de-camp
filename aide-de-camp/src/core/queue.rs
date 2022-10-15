@@ -7,8 +7,12 @@ use crate::core::job_handle::JobHandle;
 use crate::core::job_processor::JobProcessor;
 use crate::core::{DateTime, Duration, Xid};
 
-/// An interface to queue implementation. Reponsible for pushing jobs into the queue and pulling
+/// An interface to queue implementation. Responsible for pushing jobs into the queue and pulling
 /// jobs out of the queue.
+///
+/// ### Priority
+///
+/// When is enqueued one can specify priority. Jobs with higher priority will get polled first even if submitted after lower priority jobs.
 #[async_trait]
 pub trait Queue: Send + Sync {
     type JobHandle: JobHandle;
@@ -17,17 +21,18 @@ pub trait Queue: Send + Sync {
         &self,
         payload: J::Payload,
         scheduled_at: DateTime,
+        priority: i8,
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
         J::Payload: Encode;
     /// Schedule a job to run next. Depending on queue backlog this may start running later than you expect.
-    async fn schedule<J>(&self, payload: J::Payload) -> Result<Xid, QueueError>
+    async fn schedule<J>(&self, payload: J::Payload, priority: i8) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
         J::Payload: Encode,
     {
-        self.schedule_at::<J>(payload, Utc::now()).await
+        self.schedule_at::<J>(payload, Utc::now(), priority).await
     }
 
     /// Schedule a job to run at the future time relative to now.
@@ -35,13 +40,14 @@ pub trait Queue: Send + Sync {
         &self,
         payload: J::Payload,
         scheduled_in: Duration,
+        priority: i8,
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
         J::Payload: Encode,
     {
         let when = Utc::now() + scheduled_in;
-        self.schedule_at::<J>(payload, when).await
+        self.schedule_at::<J>(payload, when, priority).await
     }
 
     /// Pool queue, implementation should not wait for next job, if there nothing return `Ok(None)`.
