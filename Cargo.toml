@@ -1,6 +1,7 @@
 [workspace]
 members = [
+  "aide-de-camp",
+  "aide-de-camp-cron",
   "aide-de-camp-sqlite",
   "aide-de-camp-sqlite-bench",
-  "aide-de-camp",
 ]
