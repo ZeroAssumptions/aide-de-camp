@@ -66,14 +66,12 @@ Pick a backend[^1] that suits you and add following to your `Cargo.toml`:
 
 [dependencies]
 aide-de-camp = "0.1.0"
-aide-de-camp-sqlite = "0.1.0"  # Or any other avaiable backend
+aide-de-camp-sqlite = "0.1.0"  # Or any other available backend
 ```
-
-
 
 ### Usage
 
-`aide-de-camp-sqlite` has pretty detailed example of how to use this crate.
+`aide-de-camp-sqlite` has a pretty detailed example of how to use this crate.
 
 ## Components
 
@@ -84,17 +82,15 @@ aide-de-camp-sqlite = "0.1.0"  # Or any other avaiable backend
 
 ## License
 
-Licensed under either of
+Choose licensing under either of the following for your use case:
 
 -   Apache License, Version 2.0
     ([LICENSE-APACHE](https://github.com/ZeroAssumptions/aide-de-camp/blob/main/LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 -   MIT license
     ([LICENSE-MIT](https://github.com/ZeroAssumptions/aide-de-camp/blob/main/LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
-at your option.
-
 ## Contribution
 
-Contributions are subject to CLA. Any contribution intentionally submitted
+Contributions are subject to CLA (Contributor License Agreement). Any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
