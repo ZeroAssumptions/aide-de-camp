@@ -88,6 +88,11 @@ Choose licensing under either of the following for your use case:
     ([LICENSE-APACHE](https://github.com/ZeroAssumptions/aide-de-camp/blob/main/LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 -   MIT license
     ([LICENSE-MIT](https://github.com/ZeroAssumptions/aide-de-camp/blob/main/LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+    
+## Blog Posts
+
+- [Build a Job Queue with Rust Using Aide-De-Camp (Part 1)](https://dev.to/zeroassumptions/build-a-job-queue-with-rust-using-aide-de-camp-part-1-4g5m)
+- [Build a Job Queue with Rust Using Aide-De-Camp (Part 2)](https://dev.to/zeroassumptions/build-a-job-queue-with-rust-using-aide-de-camp-part-2-993)
 
 ## Contribution
 
