@@ -11,6 +11,7 @@ pub type DateTime = chrono::DateTime<chrono::Utc>;
 pub use bincode;
 pub use bytes::Bytes;
 pub use chrono::{Duration, Utc};
+pub use tokio_util::sync::CancellationToken;
 
 pub mod job_handle;
 pub mod job_processor;

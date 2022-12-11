@@ -3,6 +3,7 @@ use crate::core::Xid;
 use async_trait::async_trait;
 use bincode::{config::Configuration, Decode, Encode};
 use bytes::Bytes;
+use tokio_util::sync::CancellationToken;
 use tracing::instrument;
 
 /// Shorthand for boxed trait object for a WrappedJob.
@@ -42,13 +43,29 @@ where
     type Error = JobError;
 
     #[instrument(skip_all, err, fields(jid = %jid.to_string(), job_type = %Self::name()))]
-    async fn handle(&self, jid: Xid, payload: Self::Payload) -> Result<(), Self::Error> {
+    async fn handle(
+        &self,
+        jid: Xid,
+        payload: Self::Payload,
+        cancellation_token: CancellationToken,
+    ) -> Result<(), Self::Error> {
         let (payload, _) = bincode::decode_from_slice(payload.as_ref(), self.config)?;
-        self.job.handle(jid, payload).await.map_err(Into::into)
+        self.job
+            .handle(jid, payload, cancellation_token)
+            .await
+            .map_err(Into::into)
     }
 
     fn name() -> &'static str {
         J::name()
+    }
+
+    fn max_retries(&self) -> u32 {
+        self.job.max_retries()
+    }
+
+    fn shutdown_timeout(&self) -> std::time::Duration {
+        self.job.shutdown_timeout()
     }
 }
 

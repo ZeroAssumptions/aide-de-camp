@@ -16,10 +16,12 @@ pub mod prelude {
         job_handle::JobHandle,
         job_processor::{JobError, JobProcessor},
         queue::{Queue, QueueError},
-        Duration, Xid,
+        CancellationToken, Duration, Xid,
     };
     #[cfg(feature = "runner")]
-    pub use super::runner::{job_router::RunnerRouter, job_runner::JobRunner};
+    pub use super::runner::{
+        job_router::RunnerRouter, job_runner::JobRunner, job_runner::RunnerOptions,
+    };
     pub use bincode::{Decode, Encode};
 }
 
