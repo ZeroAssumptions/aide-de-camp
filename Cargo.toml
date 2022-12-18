@@ -4,3 +4,6 @@ members = [
   "aide-de-camp-sqlite-bench",
   "aide-de-camp",
 ]
+
+[package.metadata.release]
+pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "{{version}}"]

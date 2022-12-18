@@ -72,6 +72,8 @@
           cargo-sweep
           cargo-wipe
           cargo-outdated
+          cargo-release
+          git-cliff
           cmake
           gnumake
           openssl.dev
