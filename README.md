@@ -65,8 +65,8 @@ Pick a backend[^1] that suits you and add following to your `Cargo.toml`:
 # Cargo.toml
 
 [dependencies]
-aide-de-camp = "0.1.0"
-aide-de-camp-sqlite = "0.1.0"  # Or any other available backend
+aide-de-camp = "0.2.0"
+aide-de-camp-sqlite = "0.2.0"  # Or any other available backend
 ```
 
 ### Usage
