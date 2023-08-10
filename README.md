@@ -80,6 +80,11 @@ aide-de-camp-sqlite = "0.2.0"  # Or any other available backend
 
 [^1]: Currently, only SQLite supported (`aide-de-camp-sqlite`), but PostgreSQL backend is coming soon!
 
+## Backends
+
+ - [**SQLite**](https://crates.io/crates/aide-de-camp-sqlite)
+ - [**MongoDB**](https://crates.io/crates/aide-de-camp-mongodb)
+
 ## License
 
 Choose licensing under either of the following for your use case:
