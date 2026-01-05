@@ -4,3 +4,4 @@ members = [
   "aide-de-camp-sqlite-bench",
   "aide-de-camp",
 ]
+resolver = "2"

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE adc_queue SET started_at=null WHERE jid = ?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "90ff02e75816b440adb7fcf15d39a89892f021c6ab1d5c54fc582514ee00e3ee"
+}

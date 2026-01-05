@@ -2,19 +2,19 @@ use super::wrapped_job::{BoxedJobHandler, WrappedJobHandler};
 use crate::core::job_handle::JobHandle;
 use crate::core::job_processor::{JobError, JobProcessor};
 use crate::core::queue::{Queue, QueueError};
-use bincode::{self, Decode, Encode};
 use chrono::Duration;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use thiserror::Error;
 use tokio_util::sync::CancellationToken;
 use tracing::instrument;
 
 /// A job processor router. Matches job type to job processor implementation.
-/// This type requires that your jobs implement `Encode` + `Decode` from bincode trait. Those traits are re-exported in prelude.
+/// This type requires that your jobs implement `Serialize` + `Deserialize` from serde. Those traits are re-exported in prelude.
 ///
 /// ## Example
 /// ```rust
-/// use aide_de_camp::prelude::{JobProcessor, RunnerRouter, Encode, Decode, Xid, CancellationToken};
+/// use aide_de_camp::prelude::{JobProcessor, RunnerRouter, Serialize, Deserialize, Xid, CancellationToken};
 /// use async_trait::async_trait;
 /// struct MyJob;
 ///
@@ -25,7 +25,7 @@ use tracing::instrument;
 ///     }
 /// }
 ///
-/// #[derive(Encode, Decode)]
+/// #[derive(Serialize, Deserialize)]
 /// struct MyJobPayload(u8, String);
 ///
 /// #[async_trait::async_trait]
@@ -62,7 +62,7 @@ impl RunnerRouter {
     pub fn add_job_handler<J>(&mut self, job: J)
     where
         J: JobProcessor + 'static,
-        J::Payload: Decode + Encode,
+        J::Payload: for<'de> Deserialize<'de> + Serialize,
         J::Error: Into<JobError>,
     {
         let name = J::name();
@@ -189,7 +189,7 @@ async fn handle_job_result<H: JobHandle>(
     if cancellation_token.is_cancelled() {
         tracing::info!("Cancellation was requested during job processing");
     }
-    match job_result.map_err(JobError::from) {
+    match job_result {
         Ok(_) => {
             job_handle.complete().await?;
             Ok(())
@@ -218,7 +218,6 @@ async fn handle_queue_error(error: QueueError) {
 mod test {
     use super::*;
     use crate::core::Xid;
-    use bincode::config::standard;
     use std::convert::Infallible;
 
     #[tokio::test]
@@ -254,7 +253,7 @@ mod test {
         let wrapped: Box<dyn JobProcessor<Payload = _, Error = JobError>> =
             Box::new(WrappedJobHandler::new(Example));
 
-        let payload = bincode::encode_to_vec(&payload, standard()).unwrap();
+        let payload = serde_json::to_vec(&payload).unwrap();
 
         wrapped
             .handle(xid::new(), payload.into(), CancellationToken::new())

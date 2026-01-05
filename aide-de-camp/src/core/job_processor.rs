@@ -4,12 +4,12 @@ use std::convert::Infallible;
 use thiserror::Error;
 use tokio_util::sync::CancellationToken;
 
-/// A job-handler interface. Your Payload should implement `bincode::{Decode, Encode}` if you're
+/// A job-handler interface. Your Payload should implement `serde::{Serialize, Deserialize}` if you're
 /// planning to use it with the runner and Queue from this crate.
 ///
 /// ## Example
 /// ```rust
-/// use aide_de_camp::prelude::{JobProcessor, Encode, Decode, Xid, CancellationToken};
+/// use aide_de_camp::prelude::{JobProcessor, Serialize, Deserialize, Xid, CancellationToken};
 /// use async_trait::async_trait;
 /// struct MyJob;
 ///
@@ -20,7 +20,7 @@ use tokio_util::sync::CancellationToken;
 ///     }
 /// }
 ///
-/// #[derive(Encode, Decode)]
+/// #[derive(Serialize, Deserialize)]
 /// struct MyJobPayload(u8, String);
 ///
 /// #[async_trait::async_trait]
@@ -45,11 +45,11 @@ use tokio_util::sync::CancellationToken;
 /// them directly as your struct fields.
 #[async_trait]
 pub trait JobProcessor: Send + Sync {
-    /// What is the input to this handler. If you want to use `RunnerRouter`, then this must implement `bincode::Decode` and `bincode::Encode`.
+    /// What is the input to this handler. If you want to use `RunnerRouter`, then this must implement `serde::Deserialize` and `serde::Serialize`.
     type Payload: Send;
     /// What error is returned
     type Error: Send;
-    /// Run the job, passing payload to it. Your payload should implement `bincode::Decode`.
+    /// Run the job, passing payload to it. Your payload should implement `serde::Deserialize`.
     /// You should listen for the `cancellation_token.cancelled()` event in order to handle shutdown requests gracefully.
     async fn handle(
         &self,
@@ -77,12 +77,9 @@ pub trait JobProcessor: Send + Sync {
 /// Error types returned by job processor that wraps your job processor.
 #[derive(Error, Debug)]
 pub enum JobError {
-    /// Encountered an error when tried to deserialize Context.
-    #[error("Failed to deserialize job context")]
-    DecodeError {
-        #[from]
-        source: bincode::error::DecodeError,
-    },
+    /// Encountered an error when tried to deserialize payload.
+    #[error("Failed to deserialize job payload: {0}")]
+    Deserialization(String),
 
     #[error("Job failed to complete within the shutdown timeout of {0:#?}")]
     ShutdownTimeout(std::time::Duration),

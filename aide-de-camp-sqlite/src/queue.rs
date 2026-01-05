@@ -2,10 +2,10 @@ use crate::job_handle::SqliteJobHandle;
 use crate::types::JobRow;
 use aide_de_camp::core::job_processor::JobProcessor;
 use aide_de_camp::core::queue::{Queue, QueueError};
-use aide_de_camp::core::{bincode::Encode, new_xid, DateTime, Xid};
+use aide_de_camp::core::{new_xid, DateTime, Xid};
 use anyhow::Context;
 use async_trait::async_trait;
-use bincode::Decode;
+use serde::{Deserialize, Serialize};
 use sqlx::sqlite::SqliteQueryResult;
 use sqlx::{FromRow, QueryBuilder, SqlitePool};
 use tracing::instrument;
@@ -14,15 +14,11 @@ use tracing::instrument;
 #[derive(Clone)]
 pub struct SqliteQueue {
     pool: SqlitePool,
-    bincode_config: bincode::config::Configuration,
 }
 
 impl SqliteQueue {
     pub fn with_pool(pool: SqlitePool) -> Self {
-        Self {
-            pool,
-            bincode_config: bincode::config::standard(),
-        }
+        Self { pool }
     }
 }
 
@@ -39,9 +35,9 @@ impl Queue for SqliteQueue {
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Encode,
+        J::Payload: Serialize,
     {
-        let payload = bincode::encode_to_vec(&payload, self.bincode_config)?;
+        let payload = serde_json::to_vec(&payload).map_err(QueueError::SerializeError)?;
         let jid = new_xid();
         let jid_string = jid.to_string();
         let job_type = J::name();
@@ -121,7 +117,7 @@ impl Queue for SqliteQueue {
     async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Decode,
+        J::Payload: for<'de> Deserialize<'de>,
     {
         let jid = job_id.to_string();
         let job_type = J::name();
@@ -132,9 +128,9 @@ impl Queue for SqliteQueue {
         .fetch_optional(&self.pool)
         .await
         .context("Failed to remove job from the queue")?
-        .map(|row| row.payload.unwrap_or_default())
+        .map(|row| row.payload)
         .ok_or(QueueError::JobNotFound(job_id))?;
-        let (decoded, _) = bincode::decode_from_slice(&payload, self.bincode_config)?;
+        let decoded = serde_json::from_slice(&payload).map_err(QueueError::DeserializeError)?;
         Ok(decoded)
     }
 }

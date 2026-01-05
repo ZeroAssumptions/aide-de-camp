@@ -9,9 +9,9 @@ use aide_de_camp_sqlite::queue::SqliteQueue;
 use aide_de_camp_sqlite::MIGRATOR;
 use anyhow::anyhow;
 use async_trait::async_trait;
-use bincode::{Decode, Encode};
 use futures::channel::mpsc::{unbounded, UnboundedSender};
 use futures::StreamExt;
+use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use std::collections::HashSet;
 use std::str::FromStr;
@@ -24,7 +24,7 @@ struct JobResult {
     pub jid: Xid,
 }
 
-#[derive(Decode, Encode)]
+#[derive(Serialize, Deserialize)]
 struct BenchJobPayload {
     pub started_at_millis: i64,
 }

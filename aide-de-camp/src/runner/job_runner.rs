@@ -234,7 +234,7 @@ mod test {
         ) -> Result<Xid, QueueError>
         where
             J: JobProcessor + 'static,
-            J::Payload: Encode,
+            J::Payload: Serialize,
         {
             Ok(xid::new())
         }
@@ -254,13 +254,13 @@ mod test {
         async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
         where
             J: JobProcessor + 'static,
-            J::Payload: Decode,
+            J::Payload: for<'de> Deserialize<'de>,
         {
             match &self.test_handle {
                 Some(handle) => {
                     let payload = handle.payload();
-                    let (decoded, _) =
-                        bincode::decode_from_slice(&payload, bincode::config::standard())?;
+                    let decoded =
+                        serde_json::from_slice(&payload).map_err(QueueError::DeserializeError)?;
                     Ok(decoded)
                 }
                 None => Err(QueueError::JobNotFound(job_id)),

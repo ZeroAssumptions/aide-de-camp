@@ -22,7 +22,7 @@ pub mod prelude {
     pub use super::runner::{
         job_router::RunnerRouter, job_runner::JobRunner, job_runner::RunnerOptions,
     };
-    pub use bincode::{Decode, Encode};
+    pub use serde::{Deserialize, Serialize};
 }
 
 #[cfg(test)]

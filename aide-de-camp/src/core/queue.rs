@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use bincode::{Decode, Encode};
 use chrono::Utc;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::core::job_handle::JobHandle;
@@ -25,12 +25,12 @@ pub trait Queue: Send + Sync {
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Encode;
+        J::Payload: Serialize;
     /// Schedule a job to run next. Depending on queue backlog this may start running later than you expect.
     async fn schedule<J>(&self, payload: J::Payload, priority: i8) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Encode,
+        J::Payload: Serialize,
     {
         self.schedule_at::<J>(payload, Utc::now(), priority).await
     }
@@ -44,7 +44,7 @@ pub trait Queue: Send + Sync {
     ) -> Result<Xid, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Encode,
+        J::Payload: Serialize,
     {
         let when = Utc::now() + scheduled_in;
         self.schedule_at::<J>(payload, when, priority).await
@@ -89,25 +89,19 @@ pub trait Queue: Send + Sync {
     async fn unschedule_job<J>(&self, job_id: Xid) -> Result<J::Payload, QueueError>
     where
         J: JobProcessor + 'static,
-        J::Payload: Decode;
+        J::Payload: for<'de> Deserialize<'de>;
 }
 
 /// Errors related to queue operation.
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum QueueError {
-    /// Encountered an error when tried to serialize Context.
-    #[error("Failed to serialize job context")]
-    EncodeError {
-        #[from]
-        source: bincode::error::EncodeError,
-    },
-    /// Encountered an error when tried to deserialize Context.
-    #[error("Failed to deserialize job context")]
-    DecodeError {
-        #[from]
-        source: bincode::error::DecodeError,
-    },
+    /// Encountered an error when tried to serialize payload.
+    #[error("Failed to serialize job payload: {0}")]
+    SerializeError(serde_json::Error),
+    /// Encountered an error when tried to deserialize payload.
+    #[error("Failed to deserialize job payload: {0}")]
+    DeserializeError(serde_json::Error),
     #[error("Interval must be greater than zero: {0:?}")]
     InvalidInterval(Duration),
     #[error("Job by that ID does not exist: {0}")]

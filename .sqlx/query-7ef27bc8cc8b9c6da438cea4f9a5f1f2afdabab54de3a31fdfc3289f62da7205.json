@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM adc_queue WHERE started_at IS NULL and jid = ? AND job_type = ? RETURNING *",
+  "describe": {
+    "columns": [
+      {
+        "name": "jid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "queue",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "job_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "payload",
+        "ordinal": 3,
+        "type_info": "Blob"
+      },
+      {
+        "name": "retries",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "scheduled_at",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "started_at",
+        "ordinal": 6,
+        "type_info": "Integer"
+      },
+      {
+        "name": "enqueued_at",
+        "ordinal": 7,
+        "type_info": "Integer"
+      },
+      {
+        "name": "priority",
+        "ordinal": 8,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "7ef27bc8cc8b9c6da438cea4f9a5f1f2afdabab54de3a31fdfc3289f62da7205"
+}

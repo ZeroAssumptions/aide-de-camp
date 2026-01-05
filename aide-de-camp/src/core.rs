@@ -8,9 +8,9 @@ pub use xid::Id as Xid;
 
 /// An alias for `chrono::DateTime<chrono::Utc>`
 pub type DateTime = chrono::DateTime<chrono::Utc>;
-pub use bincode;
 pub use bytes::Bytes;
 pub use chrono::{Duration, Utc};
+pub use serde_json;
 pub use tokio_util::sync::CancellationToken;
 
 pub mod job_handle;

@@ -1,6 +1,6 @@
 [package]
 name = "aide-de-camp"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,18 +13,19 @@ authors = ["Andrey Snow <andoriyu@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.53"
-async-trait = "0.1.52"
-bincode = { version = "2.0.0-rc.1" }
-bytes = "1.1.0"
+anyhow = "1.0"
+async-trait = "0.1"
+bytes = "1.0"
 chrono = "0.4"
-futures = "0.3.25"
-rand = { version = "0.8.5", optional = true }
-thiserror = "1.0.30"
-tokio = { version = "1", features = ["time", "sync"] }
-tokio-util = "0.7.4"
-tracing = "0.1.30"
-xid = "1.0.0"
+futures = "0.3"
+rand = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tokio = { version = "1", features = ["time", "sync", "macros"] }
+tokio-util = "0.7"
+tracing = "0.1"
+xid = "1.0"
 
 
 [dev-dependencies]

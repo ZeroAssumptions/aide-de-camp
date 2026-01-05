@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM adc_queue where jid = ?1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "52a42447be39002c9ea32ac14a8dff9a9a459c9b16c7c76f6d380c5492b07843"
+}

@@ -61,7 +61,7 @@ impl JobHandle for SqliteJobHandle {
             .await
             .context("Failed to start transaction")?;
         sqlx::query!("DELETE FROM adc_queue WHERE jid = ?1", jid)
-            .execute(&mut tx)
+            .execute(&mut *tx)
             .await
             .context("Failed to delete job from the queue")?;
 
@@ -72,8 +72,9 @@ impl JobHandle for SqliteJobHandle {
             retries,
             scheduled_at,
             enqueued_at)
-            .execute(&mut tx).await
+            .execute(&mut *tx).await
             .context("Failed to move job to dead queue")?;
+        tx.commit().await.context("Failed to commit transaction")?;
         Ok(())
     }
 }

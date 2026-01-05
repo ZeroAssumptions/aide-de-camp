@@ -12,13 +12,13 @@ pub static MIGRATOR: Migrator = sqlx::migrate!();
 mod test {
     use crate::queue::SqliteQueue;
     use crate::MIGRATOR;
-    use aide_de_camp::core::bincode::{Decode, Encode};
     use aide_de_camp::core::job_handle::JobHandle;
     use aide_de_camp::core::job_processor::JobProcessor;
     use aide_de_camp::core::queue::Queue;
     use aide_de_camp::core::{CancellationToken, Duration, Xid};
     use aide_de_camp::prelude::QueueError;
     use async_trait::async_trait;
+    use serde::{Deserialize, Serialize};
     use sqlx::types::chrono::Utc;
     use sqlx::SqlitePool;
     use std::convert::Infallible;
@@ -37,7 +37,7 @@ mod test {
         pool
     }
 
-    #[derive(Encode, Decode, PartialEq, Clone, Debug)]
+    #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
     struct TestPayload1 {
         arg1: i32,
         arg2: String,
@@ -76,7 +76,7 @@ mod test {
         }
     }
 
-    #[derive(Encode, Decode, PartialEq, Clone, Debug)]
+    #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
     struct TestPayload2 {
         arg1: i32,
         arg2: u64,
@@ -300,7 +300,7 @@ mod test {
 
         let result = queue.unschedule_job::<TestJob3>(jid).await;
         dbg!(&result);
-        assert!(matches!(result, Err(QueueError::DecodeError { .. })));
+        assert!(matches!(result, Err(QueueError::DeserializeError(_))));
     }
 
     #[tokio::test]

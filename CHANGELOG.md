@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-01-04
+
+### BREAKING CHANGES
+
+- **Serialization**: Replaced bincode with JSON (serde_json) for job payload serialization
+  - Payloads must now implement `serde::Serialize` + `serde::Deserialize` instead of `bincode::Encode` + `bincode::Decode`
+  - Existing SQLite databases with bincode payloads are incompatible - see UPGRADING_v0.3.md for migration guide
+  - Human-readable JSON payloads improve debugging experience
+
+### Features
+
+- Modernized development environment: Replaced flake.nix with devenv for simpler setup
+- Updated all dependencies to latest versions
+- Added comprehensive upgrade documentation (UPGRADING_v0.3.md)
+
+### Dependencies
+
+- Updated sqlx from 0.6.2 to 0.8.x (major version update)
+- Updated all workspace dependencies to latest compatible versions
+- Added serde and serde_json for JSON serialization
+- Removed bincode dependency
+
+### Development
+
+- Switched from Nix flakes to devenv for development environment
+- Updated Rust toolchain to latest stable via rust-overlay
+- Configured git hooks for code quality (rustfmt, clippy, cargo-check)
+
 ## [0.2.0] - 2022-12-18
 
 ### Features

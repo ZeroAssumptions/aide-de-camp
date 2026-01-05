@@ -6,7 +6,7 @@ jobs:
   languagetool:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: reviewdog/action-languagetool@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -18,11 +18,7 @@ jobs:
     outputs:
       packages: ${{ steps.filter.outputs.changes }}
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -36,25 +32,15 @@ jobs:
     env:
       SQLX_OFFLINE: true
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
-          profile: minimal
-          override: true
           components: rustfmt, clippy
-      - uses: LoliGothick/rustfmt-check@v0.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- --deny=warnings
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- --deny=warnings
 
   quality-assurance:
     name: Quality Assurance (${{ matrix.project }})
@@ -67,24 +53,16 @@ jobs:
     env:
       SQLX_OFFLINE: true
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-          access_token: ${{ github.token }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+        uses: dtolnay/rust-toolchain@stable
       - uses: taiki-e/install-action@nextest
       - name: Test Rust
         working-directory: ${{matrix.project}}
         run: cargo nextest run --profile ci
       - name: Upload Unit Test Results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Unit Test Results (${{ matrix.project }})
           path: target/nextest/ci/junit.xml
@@ -93,12 +71,17 @@ jobs:
     needs: quality-assurance
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: Unit Test Results (*)
+          merge-multiple: true
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: artifacts/**/*.xml

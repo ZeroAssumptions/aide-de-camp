@@ -1,8 +1,8 @@
 use crate::core::job_processor::{JobError, JobProcessor};
 use crate::core::Xid;
 use async_trait::async_trait;
-use bincode::{config::Configuration, Decode, Encode};
 use bytes::Bytes;
+use serde::{Deserialize, Serialize};
 use tokio_util::sync::CancellationToken;
 use tracing::instrument;
 
@@ -13,18 +13,16 @@ pub type BoxedJobHandler = Box<dyn JobProcessor<Payload = Bytes, Error = JobErro
 /// need to directly use this type, JobRouter takes care of everything related to it.
 pub struct WrappedJobHandler<T: JobProcessor> {
     job: T,
-    config: Configuration,
 }
 
 impl<J> WrappedJobHandler<J>
 where
     J: JobProcessor + 'static,
-    J::Payload: Decode + Encode,
+    J::Payload: for<'de> Deserialize<'de> + Serialize,
     J::Error: Into<JobError>,
 {
     pub fn new(job: J) -> Self {
-        let config = bincode::config::standard();
-        Self { job, config }
+        Self { job }
     }
 
     pub fn boxed(self) -> BoxedJobHandler {
@@ -36,7 +34,7 @@ where
 impl<J> JobProcessor for WrappedJobHandler<J>
 where
     J: JobProcessor + 'static,
-    J::Payload: Decode + Encode,
+    J::Payload: for<'de> Deserialize<'de> + Serialize,
     J::Error: Into<JobError>,
 {
     type Payload = Bytes;
@@ -49,7 +47,8 @@ where
         payload: Self::Payload,
         cancellation_token: CancellationToken,
     ) -> Result<(), Self::Error> {
-        let (payload, _) = bincode::decode_from_slice(payload.as_ref(), self.config)?;
+        let payload = serde_json::from_slice(payload.as_ref())
+            .map_err(|e| JobError::Deserialization(e.to_string()))?;
         self.job
             .handle(jid, payload, cancellation_token)
             .await
@@ -72,7 +71,7 @@ where
 impl<J> From<J> for WrappedJobHandler<J>
 where
     J: JobProcessor + 'static,
-    J::Payload: Decode + Encode,
+    J::Payload: for<'de> Deserialize<'de> + Serialize,
     J::Error: Into<JobError>,
 {
     fn from(job: J) -> Self {
